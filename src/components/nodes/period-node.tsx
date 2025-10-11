@@ -4,9 +4,18 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { CalendarDays } from 'lucide-react';
+import NodeToolbar from './node-toolbar';
 
-function PeriodNode({ id, data }: NodeProps<{ name: string; description: string; updateNodeData: (id: string, data: any) => void; }>) {
-  const { name, description, updateNodeData } = data;
+type PeriodNodeData = {
+  name: string;
+  description: string;
+  updateNodeData: (id: string, data: any) => void;
+  addPeriod: (direction: 'left' | 'right', sourceNodeId: string) => void;
+  deleteNode: (nodeId: string) => void;
+}
+
+function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
+  const { name, description, updateNodeData, addPeriod, deleteNode } = data;
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if(updateNodeData) updateNodeData(id, { name: e.target.value });
@@ -17,7 +26,12 @@ function PeriodNode({ id, data }: NodeProps<{ name: string; description: string;
   };
 
   return (
-    <Card className="w-64 shadow-lg border-2 border-primary/50">
+    <Card className="w-64 shadow-lg border-2 border-primary/50 group relative">
+      <NodeToolbar
+        onAddLeft={() => addPeriod('left', id)}
+        onAddRight={() => addPeriod('right', id)}
+        onDelete={() => deleteNode(id)}
+      />
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-primary/10">
         <CardTitle className="text-lg font-headline flex items-center gap-2">
           <CalendarDays className="w-5 h-5" />

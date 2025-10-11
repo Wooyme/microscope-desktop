@@ -58,6 +58,52 @@ function SessionWeaverFlow() {
     );
   }, []);
 
+  const addNode = (type: 'period' | 'event') => {
+    const newNode: Node = {
+      id: getUniqueNodeId(type),
+      type,
+      position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 50 },
+      data: { name: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`, description: '' },
+    };
+    setNodes((nds) => nds.concat(newNode));
+  };
+  
+  const addPeriod = (direction: 'left' | 'right', sourceNodeId: string) => {
+    const sourceNode = nodes.find(n => n.id === sourceNodeId);
+    if (!sourceNode) return;
+  
+    const newNodeId = getUniqueNodeId('period');
+    const xOffset = direction === 'left' ? -300 : 300;
+  
+    const newNode: Node = {
+      id: newNodeId,
+      type: 'period',
+      position: { x: sourceNode.position.x + xOffset, y: sourceNode.position.y },
+      data: { name: 'New Period', description: '' },
+    };
+  
+    const newEdge: Edge = {
+      id: `edge-${direction === 'left' ? newNodeId : sourceNodeId}-${direction === 'left' ? sourceNodeId : newNodeId}`,
+      source: direction === 'left' ? newNodeId : sourceNodeId,
+      target: direction === 'left' ? sourceNodeId : newNodeId,
+      sourceHandle: 'peer-source',
+      targetHandle: 'peer-target',
+      style: { stroke: 'hsl(var(--accent))' },
+    };
+  
+    setNodes(nds => nds.concat(newNode));
+    setEdges(eds => addEdge(newEdge, eds));
+  };
+  
+  const deleteNode = (nodeId: string) => {
+    setNodes(nds => nds.filter(n => n.id !== nodeId));
+    setEdges(eds => eds.filter(e => e.source !== nodeId && e.target !== nodeId));
+    toast({
+      title: "Node Deleted",
+      description: "The selected node has been removed from the narrative.",
+    });
+  };
+
   const nodeTypes: NodeTypes = useMemo(() => ({
     period: PeriodNode,
     event: EventNode,
@@ -93,15 +139,6 @@ function SessionWeaverFlow() {
     [setEdges, nodes]
   );
 
-  const addNode = (type: 'period' | 'event') => {
-    const newNode: Node = {
-      id: getUniqueNodeId(type),
-      type,
-      position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 50 },
-      data: { name: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`, description: '' },
-    };
-    setNodes((nds) => nds.concat(newNode));
-  };
 
   const handleGetSuggestions = async () => {
     setIsGenerating(true);
@@ -237,7 +274,7 @@ function SessionWeaverFlow() {
 
 
   const nodesWithUpdater = useMemo(() => {
-    return nodes.map(n => ({...n, data: {...n.data, updateNodeData}}))
+    return nodes.map(n => ({...n, data: {...n.data, updateNodeData, addPeriod, deleteNode }}))
   }, [nodes, updateNodeData]);
 
   return (
