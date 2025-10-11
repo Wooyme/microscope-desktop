@@ -2,12 +2,14 @@ export type Period = {
     id: string;
     name: string;
     description: string;
+    position: { x: number, y: number };
 };
   
 export type Event = {
     id:string;
     name: string;
     description: string;
+    position: { x: number, y: number };
 };
   
 export type Legacy = {
@@ -15,4 +17,10 @@ export type Legacy = {
     source: string;
     target: string;
     description: string;
+};
+
+export type History = {
+    periods: Period[];
+    events: Event[];
+    legacies: Legacy[];
 };

@@ -27,7 +27,7 @@ import AiSuggestionsPanel from '@/components/ai-suggestions-panel';
 import { Button } from './ui/button';
 import { suggestNewLegacies, SuggestNewLegaciesOutput } from '@/ai/flows/suggest-new-legacies';
 import { useToast } from '@/hooks/use-toast';
-import type { Period, Event } from '@/lib/types';
+import type { Period, Event, Legacy, History } from '@/lib/types';
 import { PanelRight } from 'lucide-react';
 
 const initialNodes: Node[] = [
@@ -98,10 +98,10 @@ function SessionWeaverFlow() {
     try {
       const periods: Period[] = nodes
         .filter((n) => n.type === 'period')
-        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description }));
+        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, position: n.position }));
       const events: Event[] = nodes
         .filter((n) => n.type === 'event')
-        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description }));
+        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, position: n.position }));
       const legacies = edges.map((e) => ({
         id: e.id,
         source: e.source,
@@ -145,6 +145,87 @@ function SessionWeaverFlow() {
     });
   };
 
+  const exportHistory = () => {
+    try {
+      const periods: Period[] = nodes
+        .filter((n) => n.type === 'period')
+        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, position: n.position }));
+      const events: Event[] = nodes
+        .filter((n) => n.type === 'event')
+        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, position: n.position }));
+      const legacies: Legacy[] = edges.map((e) => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        description: e.data?.description || '',
+      }));
+
+      const history: History = { periods, events, legacies };
+      const dataStr = JSON.stringify(history, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+      const exportFileDefaultName = 'session-history.json';
+
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      toast({ title: 'Success', description: 'History exported successfully.' });
+    } catch (error) {
+      console.error('Error exporting history:', error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to export history.' });
+    }
+  };
+
+  const importHistory = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result;
+        if (typeof text !== 'string') {
+          throw new Error('File is not a valid text file.');
+        }
+        const history: History = JSON.parse(text);
+
+        const newNodes: Node[] = [];
+        let maxId = 0;
+
+        history.periods.forEach(p => {
+          const idNum = parseInt(p.id.split('-')[1]);
+          if (idNum > maxId) maxId = idNum;
+          newNodes.push({ id: p.id, type: 'period', position: p.position, data: { name: p.name, description: p.description } });
+        });
+        history.events.forEach(e => {
+          const idNum = parseInt(e.id.split('-')[1]);
+          if (idNum > maxId) maxId = idNum;
+          newNodes.push({ id: e.id, type: 'event', position: e.position, data: { name: e.name, description: e.description } });
+        });
+
+        const newEdges: Edge[] = history.legacies.map(l => ({
+          id: l.id,
+          source: l.source,
+          target: l.target,
+          data: { description: l.description }
+        }));
+
+        nodeIdCounter = maxId + 1;
+        setNodes(newNodes);
+        setEdges(newEdges);
+        toast({ title: 'Success', description: 'History imported successfully.' });
+      } catch (error) {
+        console.error('Error importing history:', error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to parse history file. Please check the file format.' });
+      }
+    };
+    reader.readAsText(file);
+    // Reset file input to allow importing the same file again
+    event.target.value = '';
+  };
+
+
   const nodesWithUpdater = useMemo(() => {
     return nodes.map(n => ({...n, data: {...n.data, updateNodeData}}))
   }, [nodes, updateNodeData]);
@@ -160,6 +241,8 @@ function SessionWeaverFlow() {
                     isGenerating={isGenerating}
                     isReviewMode={isReviewMode}
                     setReviewMode={setReviewMode}
+                    importHistory={importHistory}
+                    exportHistory={exportHistory}
                 />
                 {suggestions.length > 0 && !isSuggestionsPanelOpen && (
                     <Button variant="outline" size="icon" onClick={() => setSuggestionsPanelOpen(p => !p)}>
