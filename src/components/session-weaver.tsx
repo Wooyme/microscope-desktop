@@ -94,6 +94,32 @@ function SessionWeaverFlow() {
     setNodes(nds => nds.concat(newNode));
     setEdges(eds => addEdge(newEdge, eds));
   };
+
+  const addEvent = (sourceNodeId: string) => {
+    const sourceNode = nodes.find(n => n.id === sourceNodeId);
+    if (!sourceNode || sourceNode.type !== 'period') return;
+  
+    const newNodeId = getUniqueNodeId('event');
+  
+    const newNode: Node = {
+      id: newNodeId,
+      type: 'event',
+      position: { x: sourceNode.position.x, y: sourceNode.position.y + 150 },
+      data: { name: 'New Event', description: '' },
+    };
+  
+    const newEdge: Edge = {
+      id: `edge-${sourceNodeId}-${newNodeId}`,
+      source: sourceNodeId,
+      target: newNodeId,
+      sourceHandle: 'child-source',
+      targetHandle: 'period-target',
+      style: { stroke: 'hsl(var(--primary))' },
+    };
+  
+    setNodes(nds => nds.concat(newNode));
+    setEdges(eds => addEdge(newEdge, eds));
+  };
   
   const deleteNode = (nodeId: string) => {
     setNodes(nds => nds.filter(n => n.id !== nodeId));
@@ -274,8 +300,8 @@ function SessionWeaverFlow() {
 
 
   const nodesWithUpdater = useMemo(() => {
-    return nodes.map(n => ({...n, data: {...n.data, updateNodeData, addPeriod, deleteNode }}))
-  }, [nodes, updateNodeData]);
+    return nodes.map(n => ({...n, data: {...n.data, updateNodeData, addPeriod, deleteNode, addEvent }}))
+  }, [nodes, updateNodeData, addPeriod, deleteNode, addEvent]);
 
   return (
     <div className="w-full h-screen flex flex-col">

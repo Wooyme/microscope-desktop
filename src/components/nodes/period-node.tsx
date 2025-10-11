@@ -12,10 +12,11 @@ type PeriodNodeData = {
   updateNodeData: (id: string, data: any) => void;
   addPeriod: (direction: 'left' | 'right', sourceNodeId: string) => void;
   deleteNode: (nodeId: string) => void;
+  addEvent: (sourceNodeId: string) => void;
 }
 
 function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
-  const { name, description, updateNodeData, addPeriod, deleteNode } = data;
+  const { name, description, updateNodeData, addPeriod, deleteNode, addEvent } = data;
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if(updateNodeData) updateNodeData(id, { name: e.target.value });
@@ -31,6 +32,7 @@ function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
         onAddLeft={() => addPeriod('left', id)}
         onAddRight={() => addPeriod('right', id)}
         onDelete={() => deleteNode(id)}
+        onAddChild={() => addEvent(id)}
       />
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-primary/10">
         <CardTitle className="text-lg font-headline flex items-center gap-2">
