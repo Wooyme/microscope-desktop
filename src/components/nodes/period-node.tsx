@@ -39,8 +39,8 @@ function PeriodNode({ id, data }: NodeProps<{ name: string; description: string;
           rows={3}
         />
       </CardContent>
-      <Handle type="source" position={Position.Right} className="w-3 h-3 !bg-accent" />
-      <Handle type="target" position={Position.Left} className="w-3 h-3 !bg-accent" />
+      <Handle type="source" position={Position.Right} id="period-source" className="w-3 h-3 !bg-accent" />
+      <Handle type="target" position={Position.Left} id="period-target" className="w-3 h-3 !bg-accent" />
     </Card>
   );
 }

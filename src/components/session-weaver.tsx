@@ -79,8 +79,22 @@ function SessionWeaverFlow() {
   );
 
   const onConnect: OnConnect = useCallback(
-    (connection: Connection) => setEdges((eds) => addEdge({ ...connection, data: { description: '' } }, eds)),
-    [setEdges]
+    (connection: Connection) => {
+      const sourceNode = nodes.find(node => node.id === connection.source);
+      const targetNode = nodes.find(node => node.id === connection.target);
+
+      if (sourceNode?.type === 'event') {
+        toast({
+          variant: 'destructive',
+          title: 'Invalid Connection',
+          description: 'Events cannot be the source of a legacy.',
+        });
+        return;
+      }
+
+      setEdges((eds) => addEdge({ ...connection, data: { description: '' } }, eds))
+    },
+    [setEdges, nodes, toast]
   );
 
   const addNode = (type: 'period' | 'event') => {
