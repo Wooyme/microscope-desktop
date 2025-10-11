@@ -32,3 +32,28 @@ export type History = {
     scenes: Scene[];
     legacies: Legacy[];
 };
+
+// Types for the hierarchical narrative context
+export interface NarrativeScene {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface NarrativeEvent {
+  id: string;
+  name: string;
+  description: string;
+  scenes: NarrativeScene[];
+}
+
+export interface NarrativePeriod {
+  id: string;
+  name: string;
+  description: string;
+  events: NarrativeEvent[];
+}
+
+export interface Narrative {
+  periods: NarrativePeriod[];
+}

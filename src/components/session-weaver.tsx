@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect, createContext, useContext } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -28,7 +28,7 @@ import AiSuggestionsPanel from '@/components/ai-suggestions-panel';
 import { Button } from './ui/button';
 import { suggestNewLegacies, SuggestNewLegaciesOutput } from '@/ai/flows/suggest-new-legacies';
 import { useToast } from '@/hooks/use-toast';
-import type { Period, Event, Legacy, History, Scene } from '@/lib/types';
+import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene } from '@/lib/types';
 import { PanelRight } from 'lucide-react';
 import FocusPanel from './focus-panel';
 
@@ -42,6 +42,10 @@ const initialEdges: Edge[] = [];
 let nodeIdCounter = 2;
 const getUniqueNodeId = (type: string) => `${type}-${nodeIdCounter++}`;
 
+
+const NarrativeContext = createContext<{ narrative: Narrative }>({ narrative: { periods: [] } });
+export const useNarrative = () => useContext(NarrativeContext);
+
 function SessionWeaverFlow() {
   const [nodes, setNodes] = useState<Node<any>[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
@@ -50,8 +54,58 @@ function SessionWeaverFlow() {
   const [suggestions, setSuggestions] = useState<SuggestNewLegaciesOutput>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [focus, setFocus] = useState('');
+  const [narrative, setNarrative] = useState<Narrative>({ periods: [] });
 
   const { toast } = useToast();
+
+  useEffect(() => {
+    const buildNarrative = () => {
+      const periodNodes = nodes.filter(n => n.type === 'period');
+      const eventNodes = nodes.filter(n => n.type === 'event');
+      const sceneNodes = nodes.filter(n => n.type === 'scene');
+
+      const narrativePeriods: NarrativePeriod[] = periodNodes.map(pNode => {
+        const childEventIds = edges
+          .filter(e => e.source === pNode.id && nodes.find(n => n.id === e.target)?.type === 'event')
+          .map(e => e.target);
+        
+        const narrativeEvents: NarrativeEvent[] = eventNodes
+          .filter(eNode => childEventIds.includes(eNode.id))
+          .map(eNode => {
+            const childSceneIds = edges
+              .filter(e => e.source === eNode.id && nodes.find(n => n.id === e.target)?.type === 'scene')
+              .map(e => e.target);
+
+            const narrativeScenes: NarrativeScene[] = sceneNodes
+              .filter(sNode => childSceneIds.includes(sNode.id))
+              .map(sNode => ({
+                id: sNode.id,
+                name: sNode.data.name,
+                description: sNode.data.description,
+              }));
+
+            return {
+              id: eNode.id,
+              name: eNode.data.name,
+              description: eNode.data.description,
+              scenes: narrativeScenes,
+            };
+          });
+
+        return {
+          id: pNode.id,
+          name: pNode.data.name,
+          description: pNode.data.description,
+          events: narrativeEvents,
+        };
+      });
+
+      setNarrative({ periods: narrativePeriods });
+    };
+
+    buildNarrative();
+  }, [nodes, edges]);
+
 
   const updateNodeData = useCallback((nodeId: string, data: any) => {
     setNodes((nds) =>
@@ -343,55 +397,57 @@ function SessionWeaverFlow() {
   }, [nodes, updateNodeData, addPeriod, deleteNode, addEvent, addScene]);
 
   return (
-    <div className="w-full h-screen flex flex-col">
-        <header className="p-4 border-b bg-card flex justify-between items-center shadow-sm z-10">
-            <h1 className="text-2xl font-headline text-foreground">Session Weaver</h1>
-            <div className="flex items-center gap-4">
-                <Toolbar
-                    addNode={addNode}
-                    getSuggestions={handleGetSuggestions}
-                    isGenerating={isGenerating}
-                    isReviewMode={isReviewMode}
-                    setReviewMode={setReviewMode}
-                    importHistory={importHistory}
-                    exportHistory={exportHistory}
-                />
-                {suggestions.length > 0 && !isSuggestionsPanelOpen && (
-                    <Button variant="outline" size="icon" onClick={() => setSuggestionsPanelOpen(p => !p)}>
-                        <PanelRight />
-                    </Button>
-                )}
-            </div>
-        </header>
-        <div className="flex-grow flex relative">
-            <div className="flex-grow h-full">
-                <ReactFlow
-                    nodes={nodesWithUpdater}
-                    edges={edges}
-                    onNodesChange={onNodesChange}
-                    onEdgesChange={onEdgesChange}
-                    onConnect={onConnect}
-                    nodeTypes={nodeTypes}
-                    defaultEdgeOptions={defaultEdgeOptions}
-                    nodesDraggable={!isReviewMode}
-                    nodesConnectable={!isReviewMode}
-                    elementsSelectable={!isReviewMode}
-                    fitView
-                    className={isReviewMode ? 'review-mode' : ''}
-                >
-                    <FocusPanel focus={focus} setFocus={setFocus} />
-                    <Background />
-                    <Controls />
-                </ReactFlow>
-            </div>
-            <AiSuggestionsPanel 
-                isOpen={isSuggestionsPanelOpen}
-                onClose={() => setSuggestionsPanelOpen(false)}
-                suggestions={suggestions}
-                onAddEdge={addSuggestedEdge}
-            />
-        </div>
-    </div>
+    <NarrativeContext.Provider value={{ narrative }}>
+      <div className="w-full h-screen flex flex-col">
+          <header className="p-4 border-b bg-card flex justify-between items-center shadow-sm z-10">
+              <h1 className="text-2xl font-headline text-foreground">Session Weaver</h1>
+              <div className="flex items-center gap-4">
+                  <Toolbar
+                      addNode={addNode}
+                      getSuggestions={handleGetSuggestions}
+                      isGenerating={isGenerating}
+                      isReviewMode={isReviewMode}
+                      setReviewMode={setReviewMode}
+                      importHistory={importHistory}
+                      exportHistory={exportHistory}
+                  />
+                  {suggestions.length > 0 && !isSuggestionsPanelOpen && (
+                      <Button variant="outline" size="icon" onClick={() => setSuggestionsPanelOpen(p => !p)}>
+                          <PanelRight />
+                      </Button>
+                  )}
+              </div>
+          </header>
+          <div className="flex-grow flex relative">
+              <div className="flex-grow h-full">
+                  <ReactFlow
+                      nodes={nodesWithUpdater}
+                      edges={edges}
+                      onNodesChange={onNodesChange}
+                      onEdgesChange={onEdgesChange}
+                      onConnect={onConnect}
+                      nodeTypes={nodeTypes}
+                      defaultEdgeOptions={defaultEdgeOptions}
+                      nodesDraggable={!isReviewMode}
+                      nodesConnectable={!isReviewMode}
+                      elementsSelectable={!isReviewMode}
+                      fitView
+                      className={isReviewMode ? 'review-mode' : ''}
+                  >
+                      <FocusPanel focus={focus} setFocus={setFocus} />
+                      <Background />
+                      <Controls />
+                  </ReactFlow>
+              </div>
+              <AiSuggestionsPanel 
+                  isOpen={isSuggestionsPanelOpen}
+                  onClose={() => setSuggestionsPanelOpen(false)}
+                  suggestions={suggestions}
+                  onAddEdge={addSuggestedEdge}
+              />
+          </div>
+      </div>
+    </NarrativeContext.Provider>
   );
 }
 
