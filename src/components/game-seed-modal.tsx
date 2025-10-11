@@ -8,24 +8,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { X, PlusCircle } from 'lucide-react';
 import { Separator } from './ui/separator';
+import type { GameSeed } from '@/lib/types';
 
 type GameSeedModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  bigPicture: string;
-  setBigPicture: (value: string) => void;
+  gameSeed: GameSeed;
+  setGameSeed: (gameSeed: GameSeed) => void;
 };
 
-export default function GameSeedModal({ isOpen, onClose, bigPicture, setBigPicture }: GameSeedModalProps) {
-  const [localBigPicture, setLocalBigPicture] = useState(bigPicture);
-  const [palette, setPalette] = useState(['Ancient alien artifacts', 'Political intrigue', 'FTL travel consequences']);
-  const [banned, setBanned] = useState(['Magic', 'Time travel']);
+export default function GameSeedModal({ isOpen, onClose, gameSeed, setGameSeed }: GameSeedModalProps) {
+  const [localGameSeed, setLocalGameSeed] = useState(gameSeed);
   const [newPaletteItem, setNewPaletteItem] = useState('');
   const [newBannedItem, setNewBannedItem] = useState('');
 
   useEffect(() => {
-    setLocalBigPicture(bigPicture);
-  }, [bigPicture]);
+    setLocalGameSeed(gameSeed);
+  }, [gameSeed, isOpen]);
 
 
   const handleAddItem = (list: string[], setList: (list: string[]) => void, newItem: string, setNewItem: (item: string) => void) => {
@@ -40,16 +39,14 @@ export default function GameSeedModal({ isOpen, onClose, bigPicture, setBigPictu
   };
 
   const handleSave = () => {
-    setBigPicture(localBigPicture);
-    // TODO: Save palette and banned items
-    console.log({ bigPicture: localBigPicture, palette, banned });
+    setGameSeed(localGameSeed);
     onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) {
-        setLocalBigPicture(bigPicture); // Reset local state if closing without saving
+        setLocalGameSeed(gameSeed); // Reset local state if closing without saving
       }
       onClose();
     }}>
@@ -66,8 +63,8 @@ export default function GameSeedModal({ isOpen, onClose, bigPicture, setBigPictu
               <Label htmlFor="big-picture" className="text-lg font-semibold">The Big Picture</Label>
               <Textarea
                 id="big-picture"
-                value={localBigPicture}
-                onChange={(e) => setLocalBigPicture(e.target.value)}
+                value={localGameSeed.bigPicture}
+                onChange={(e) => setLocalGameSeed(prev => ({ ...prev, bigPicture: e.target.value }))}
                 placeholder="What is the central theme or conflict?"
                 className="mt-2 h-24"
               />
@@ -83,17 +80,17 @@ export default function GameSeedModal({ isOpen, onClose, bigPicture, setBigPictu
                   value={newPaletteItem}
                   onChange={(e) => setNewPaletteItem(e.target.value)}
                   placeholder="e.g., 'Cyberpunk aesthetics'"
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddItem(palette, setPalette, newPaletteItem, setNewPaletteItem)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddItem(localGameSeed.palette, (list) => setLocalGameSeed(p => ({...p, palette: list})), newPaletteItem, setNewPaletteItem)}
                 />
-                <Button variant="ghost" size="icon" onClick={() => handleAddItem(palette, setPalette, newPaletteItem, setNewPaletteItem)}>
+                <Button variant="ghost" size="icon" onClick={() => handleAddItem(localGameSeed.palette, (list) => setLocalGameSeed(p => ({...p, palette: list})), newPaletteItem, setNewPaletteItem)}>
                   <PlusCircle className="text-green-500" />
                 </Button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {palette.map((item, index) => (
+                {localGameSeed.palette.map((item, index) => (
                   <div key={index} className="flex items-center gap-2 bg-secondary rounded-full pl-3 pr-1 py-1 text-sm">
                     {item}
-                    <button onClick={() => handleRemoveItem(palette, setPalette, item)} className="rounded-full hover:bg-secondary-foreground/20 p-0.5">
+                    <button onClick={() => handleRemoveItem(localGameSeed.palette, (list) => setLocalGameSeed(p => ({...p, palette: list})), item)} className="rounded-full hover:bg-secondary-foreground/20 p-0.5">
                       <X size={14} />
                     </button>
                   </div>
@@ -111,17 +108,17 @@ export default function GameSeedModal({ isOpen, onClose, bigPicture, setBigPictu
                   value={newBannedItem}
                   onChange={(e) => setNewBannedItem(e.target.value)}
                   placeholder="e.g., 'Dragons'"
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddItem(banned, setBanned, newBannedItem, setNewBannedItem)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddItem(localGameSeed.banned, (list) => setLocalGameSeed(p => ({...p, banned: list})), newBannedItem, setNewBannedItem)}
                 />
-                <Button variant="ghost" size="icon" onClick={() => handleAddItem(banned, setBanned, newBannedItem, setNewBannedItem)}>
+                <Button variant="ghost" size="icon" onClick={() => handleAddItem(localGameSeed.banned, (list) => setLocalGameSeed(p => ({...p, banned: list})), newBannedItem, setNewBannedItem)}>
                   <PlusCircle className="text-green-500" />
                 </Button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {banned.map((item, index) => (
+                {localGameSeed.banned.map((item, index) => (
                   <div key={index} className="flex items-center gap-2 bg-destructive/20 rounded-full pl-3 pr-1 py-1 text-sm text-destructive-foreground">
                     {item}
-                    <button onClick={() => handleRemoveItem(banned, setBanned, item)} className="rounded-full hover:bg-destructive-foreground/20 p-0.5">
+                    <button onClick={() => handleRemoveItem(localGameSeed.banned, (list) => setLocalGameSeed(p => ({...p, banned: list})), item)} className="rounded-full hover:bg-destructive-foreground/20 p-0.5">
                       <X size={14} />
                     </button>
                   </div>

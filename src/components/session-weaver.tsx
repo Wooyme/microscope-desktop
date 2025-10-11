@@ -28,7 +28,7 @@ import AiSuggestionsPanel from '@/components/ai-suggestions-panel';
 import { Button } from './ui/button';
 import { suggestNewLegacies, SuggestNewLegaciesOutput } from '@/ai/flows/suggest-new-legacies';
 import { useToast } from '@/hooks/use-toast';
-import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene } from '@/lib/types';
+import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene, GameSeed } from '@/lib/types';
 import { PanelRight } from 'lucide-react';
 import SettingsPanel from './settings-panel';
 import GameSeedModal from './game-seed-modal';
@@ -44,7 +44,7 @@ let nodeIdCounter = 2;
 const getUniqueNodeId = (type: string) => `${type}-${nodeIdCounter++}`;
 
 
-const NarrativeContext = createContext<{ narrative: Narrative }>({ narrative: { periods: [] } });
+const NarrativeContext = createContext<{ narrative: Narrative | null }>({ narrative: null });
 export const useNarrative = () => useContext(NarrativeContext);
 
 function SessionWeaverFlow() {
@@ -55,9 +55,13 @@ function SessionWeaverFlow() {
   const [suggestions, setSuggestions] = useState<SuggestNewLegaciesOutput>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [focus, setFocus] = useState('');
-  const [narrative, setNarrative] = useState<Narrative>({ periods: [] });
+  const [narrative, setNarrative] = useState<Narrative | null>(null);
   const [isGameSeedModalOpen, setGameSeedModalOpen] = useState(false);
-  const [bigPicture, setBigPicture] = useState('A grand space opera about the last remnants of humanity searching for a new home.');
+  const [gameSeed, setGameSeed] = useState<GameSeed>({
+    bigPicture: 'A grand space opera about the last remnants of humanity searching for a new home.',
+    palette: ['Ancient alien artifacts', 'Political intrigue', 'FTL travel consequences'],
+    banned: ['Magic', 'Time travel']
+  });
 
   const { toast } = useToast();
 
@@ -103,14 +107,20 @@ function SessionWeaverFlow() {
         };
       });
 
-      setNarrative({ periods: narrativePeriods });
+      setNarrative({ 
+        gameSeed,
+        focus,
+        periods: narrativePeriods 
+      });
     };
 
     buildNarrative();
-  }, [nodes, edges]);
+  }, [nodes, edges, gameSeed, focus]);
 
   useEffect(() => {
-    console.log(narrative);
+    if (narrative) {
+        console.log(narrative);
+    }
   }, [narrative]);
 
 
@@ -443,7 +453,7 @@ function SessionWeaverFlow() {
                       className={isReviewMode ? 'review-mode' : ''}
                   >
                       <SettingsPanel 
-                        bigPicture={bigPicture}
+                        bigPicture={gameSeed.bigPicture}
                         focus={focus}
                         setFocus={setFocus}
                         onBigPictureClick={() => setGameSeedModalOpen(true)}
@@ -461,8 +471,8 @@ function SessionWeaverFlow() {
               <GameSeedModal
                   isOpen={isGameSeedModalOpen}
                   onClose={() => setGameSeedModalOpen(false)}
-                  bigPicture={bigPicture}
-                  setBigPicture={setBigPicture}
+                  gameSeed={gameSeed}
+                  setGameSeed={setGameSeed}
               />
           </div>
       </div>

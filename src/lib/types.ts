@@ -54,6 +54,14 @@ export interface NarrativePeriod {
   events: NarrativeEvent[];
 }
 
+export interface GameSeed {
+  bigPicture: string;
+  palette: string[];
+  banned: string[];
+}
+
 export interface Narrative {
+  gameSeed: GameSeed;
+  focus: string;
   periods: NarrativePeriod[];
 }
