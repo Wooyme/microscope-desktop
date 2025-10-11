@@ -11,6 +11,13 @@ export type Event = {
     description: string;
     position: { x: number, y: number };
 };
+
+export type Scene = {
+    id: string;
+    name: string;
+    description: string;
+    position: { x: number, y: number };
+};
   
 export type Legacy = {
     id: string;
@@ -22,5 +29,6 @@ export type Legacy = {
 export type History = {
     periods: Period[];
     events: Event[];
+    scenes: Scene[];
     legacies: Legacy[];
 };

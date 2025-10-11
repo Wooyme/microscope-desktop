@@ -1,4 +1,4 @@
-import { BrainCircuit, CalendarPlus, Milestone, Eye, EyeOff, FileDown, FileUp } from 'lucide-react';
+import { BrainCircuit, CalendarPlus, Milestone, Eye, EyeOff, FileDown, FileUp, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import React from 'react';
 
 type ToolbarProps = {
-  addNode: (type: 'period' | 'event') => void;
+  addNode: (type: 'period' | 'event' | 'scene') => void;
   getSuggestions: () => void;
   isGenerating: boolean;
   isReviewMode: boolean;
@@ -40,6 +40,16 @@ export default function Toolbar({ addNode, getSuggestions, isGenerating, isRevie
           </TooltipTrigger>
           <TooltipContent>
             <p>Add Event</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" onClick={() => addNode('scene')}>
+              <Camera />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Add Scene</p>
           </TooltipContent>
         </Tooltip>
         <Separator orientation="vertical" className="h-6" />

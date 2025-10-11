@@ -3,19 +3,18 @@ import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, Milestone } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import NodeToolbar from './node-toolbar';
 
-type EventNodeData = {
+type SceneNodeData = {
   name: string;
   description: string;
   updateNodeData: (id: string, data: any) => void;
   deleteNode: (nodeId: string) => void;
-  addScene: (sourceNodeId: string) => void;
-};
+}
 
-function EventNode({ id, data }: NodeProps<EventNodeData>) {
-  const { name, description, updateNodeData, deleteNode, addScene } = data;
+function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
+  const { name, description, updateNodeData, deleteNode } = data;
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if(updateNodeData) updateNodeData(id, { name: e.target.value });
@@ -26,22 +25,21 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
   };
 
   return (
-    <Card className="w-64 shadow-lg border-2 border-accent/50 group relative">
-       <NodeToolbar
-        onDelete={() => deleteNode(id)}
-        onAddChild={() => addScene(id)}
-      />
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-accent/10">
-        <CardTitle className="text-lg font-headline flex items-center gap-2">
-          <Sparkles className="w-5 h-5" />
-          Event
+    <Card className="w-64 shadow-lg border-2 border-green-500/50 group relative">
+        <NodeToolbar
+            onDelete={() => deleteNode(id)}
+        />
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-green-500/10">
+        <CardTitle className="text-lg font-headline flex items-center gap-2 text-green-700">
+          <Camera className="w-5 h-5" />
+          Scene
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 space-y-2">
         <Input
           value={name}
           onChange={onNameChange}
-          placeholder="Event Name"
+          placeholder="Scene Name"
           className="text-base font-semibold"
         />
         <Textarea
@@ -52,10 +50,9 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
           rows={3}
         />
       </CardContent>
-      <Handle type="target" position={Position.Top} id="period-target" className="w-3 h-3 !bg-primary" />
-      <Handle type="source" position={Position.Bottom} id="scene-source" className="w-3 h-3 !bg-green-500" />
+      <Handle type="target" position={Position.Top} id="event-target" className="w-3 h-3 !bg-accent" />
     </Card>
   );
 }
 
-export default memo(EventNode);
+export default memo(SceneNode);

@@ -22,6 +22,7 @@ import '@xyflow/react/dist/style.css';
 
 import PeriodNode from '@/components/nodes/period-node';
 import EventNode from '@/components/nodes/event-node';
+import SceneNode from '@/components/nodes/scene-node';
 import Toolbar from '@/components/toolbar';
 import AiSuggestionsPanel from '@/components/ai-suggestions-panel';
 import { Button } from './ui/button';
@@ -58,7 +59,7 @@ function SessionWeaverFlow() {
     );
   }, []);
 
-  const addNode = (type: 'period' | 'event') => {
+  const addNode = (type: 'period' | 'event' | 'scene') => {
     const newNode: Node = {
       id: getUniqueNodeId(type),
       type,
@@ -120,6 +121,32 @@ function SessionWeaverFlow() {
     setNodes(nds => nds.concat(newNode));
     setEdges(eds => addEdge(newEdge, eds));
   };
+
+  const addScene = (sourceNodeId: string) => {
+    const sourceNode = nodes.find(n => n.id === sourceNodeId);
+    if (!sourceNode || sourceNode.type !== 'event') return;
+
+    const newNodeId = getUniqueNodeId('scene');
+
+    const newNode: Node = {
+      id: newNodeId,
+      type: 'scene',
+      position: { x: sourceNode.position.x, y: sourceNode.position.y + 200 },
+      data: { name: 'New Scene', description: '' },
+    };
+
+    const newEdge: Edge = {
+      id: `edge-${sourceNodeId}-${newNodeId}`,
+      source: sourceNodeId,
+      target: newNodeId,
+      sourceHandle: 'scene-source',
+      targetHandle: 'event-target',
+      style: { stroke: 'hsl(var(--accent))' },
+    };
+
+    setNodes(nds => nds.concat(newNode));
+    setEdges(eds => addEdge(newEdge, eds));
+  };
   
   const deleteNode = (nodeId: string) => {
     setNodes(nds => nds.filter(n => n.id !== nodeId));
@@ -133,6 +160,7 @@ function SessionWeaverFlow() {
   const nodeTypes: NodeTypes = useMemo(() => ({
     period: PeriodNode,
     event: EventNode,
+    scene: SceneNode,
   }), []);
 
   const defaultEdgeOptions: DefaultEdgeOptions = useMemo(() => ({
@@ -300,8 +328,8 @@ function SessionWeaverFlow() {
 
 
   const nodesWithUpdater = useMemo(() => {
-    return nodes.map(n => ({...n, data: {...n.data, updateNodeData, addPeriod, deleteNode, addEvent }}))
-  }, [nodes, updateNodeData, addPeriod, deleteNode, addEvent]);
+    return nodes.map(n => ({...n, data: {...n.data, updateNodeData, addPeriod, deleteNode, addEvent, addScene }}))
+  }, [nodes, updateNodeData, addPeriod, deleteNode, addEvent, addScene]);
 
   return (
     <div className="w-full h-screen flex flex-col">
