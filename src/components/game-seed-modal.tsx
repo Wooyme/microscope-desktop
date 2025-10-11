@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,15 +12,21 @@ import { Separator } from './ui/separator';
 type GameSeedModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  // TODO: Add props for game seed data and update functions
+  bigPicture: string;
+  setBigPicture: (value: string) => void;
 };
 
-export default function GameSeedModal({ isOpen, onClose }: GameSeedModalProps) {
-  const [bigPicture, setBigPicture] = useState('A grand space opera about the last remnants of humanity searching for a new home.');
+export default function GameSeedModal({ isOpen, onClose, bigPicture, setBigPicture }: GameSeedModalProps) {
+  const [localBigPicture, setLocalBigPicture] = useState(bigPicture);
   const [palette, setPalette] = useState(['Ancient alien artifacts', 'Political intrigue', 'FTL travel consequences']);
   const [banned, setBanned] = useState(['Magic', 'Time travel']);
   const [newPaletteItem, setNewPaletteItem] = useState('');
   const [newBannedItem, setNewBannedItem] = useState('');
+
+  useEffect(() => {
+    setLocalBigPicture(bigPicture);
+  }, [bigPicture]);
+
 
   const handleAddItem = (list: string[], setList: (list: string[]) => void, newItem: string, setNewItem: (item: string) => void) => {
     if (newItem && !list.includes(newItem)) {
@@ -34,13 +40,19 @@ export default function GameSeedModal({ isOpen, onClose }: GameSeedModalProps) {
   };
 
   const handleSave = () => {
-    // TODO: Implement save logic
-    console.log({ bigPicture, palette, banned });
+    setBigPicture(localBigPicture);
+    // TODO: Save palette and banned items
+    console.log({ bigPicture: localBigPicture, palette, banned });
     onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        setLocalBigPicture(bigPicture); // Reset local state if closing without saving
+      }
+      onClose();
+    }}>
       <DialogContent className="sm:max-w-[600px] flex flex-col">
         <DialogHeader>
           <DialogTitle className="font-headline">Edit Game Seed</DialogTitle>
@@ -54,8 +66,8 @@ export default function GameSeedModal({ isOpen, onClose }: GameSeedModalProps) {
               <Label htmlFor="big-picture" className="text-lg font-semibold">The Big Picture</Label>
               <Textarea
                 id="big-picture"
-                value={bigPicture}
-                onChange={(e) => setBigPicture(e.target.value)}
+                value={localBigPicture}
+                onChange={(e) => setLocalBigPicture(e.target.value)}
                 placeholder="What is the central theme or conflict?"
                 className="mt-2 h-24"
               />

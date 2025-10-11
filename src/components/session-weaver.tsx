@@ -30,7 +30,7 @@ import { suggestNewLegacies, SuggestNewLegaciesOutput } from '@/ai/flows/suggest
 import { useToast } from '@/hooks/use-toast';
 import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene } from '@/lib/types';
 import { PanelRight } from 'lucide-react';
-import FocusPanel from './focus-panel';
+import SettingsPanel from './settings-panel';
 import GameSeedModal from './game-seed-modal';
 
 const initialNodes: Node[] = [
@@ -57,6 +57,7 @@ function SessionWeaverFlow() {
   const [focus, setFocus] = useState('');
   const [narrative, setNarrative] = useState<Narrative>({ periods: [] });
   const [isGameSeedModalOpen, setGameSeedModalOpen] = useState(false);
+  const [bigPicture, setBigPicture] = useState('A grand space opera about the last remnants of humanity searching for a new home.');
 
   const { toast } = useToast();
 
@@ -441,7 +442,12 @@ function SessionWeaverFlow() {
                       fitView
                       className={isReviewMode ? 'review-mode' : ''}
                   >
-                      <FocusPanel focus={focus} setFocus={setFocus} />
+                      <SettingsPanel 
+                        bigPicture={bigPicture}
+                        focus={focus}
+                        setFocus={setFocus}
+                        onBigPictureClick={() => setGameSeedModalOpen(true)}
+                      />
                       <Background />
                       <Controls />
                   </ReactFlow>
@@ -455,6 +461,8 @@ function SessionWeaverFlow() {
               <GameSeedModal
                   isOpen={isGameSeedModalOpen}
                   onClose={() => setGameSeedModalOpen(false)}
+                  bigPicture={bigPicture}
+                  setBigPicture={setBigPicture}
               />
           </div>
       </div>
