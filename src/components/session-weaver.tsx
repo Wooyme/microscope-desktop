@@ -105,7 +105,7 @@ function SessionWeaverFlow() {
     const newNode: Node = {
       id: newNodeId,
       type: 'event',
-      position: { x: sourceNode.position.x, y: sourceNode.position.y + 150 },
+      position: { x: sourceNode.position.x, y: sourceNode.position.y + 350 },
       data: { name: 'New Event', description: '' },
     };
   
@@ -131,7 +131,7 @@ function SessionWeaverFlow() {
     const newNode: Node = {
       id: newNodeId,
       type: 'scene',
-      position: { x: sourceNode.position.x, y: sourceNode.position.y + 200 },
+      position: { x: sourceNode.position.x, y: sourceNode.position.y + 350 },
       data: { name: 'New Scene', description: '' },
     };
 
