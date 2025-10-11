@@ -1,11 +1,9 @@
-
 'use client';
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Lightbulb } from 'lucide-react';
 
 type FocusPanelProps = {
   focus: string;
@@ -26,9 +24,7 @@ export default function FocusPanel({ focus, setFocus }: FocusPanelProps) {
       <Card className="w-80 shadow-lg">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <Lightbulb className="w-5 h-5 mt-1 text-yellow-400" />
             <div className="flex-grow">
-              <h3 className="font-headline text-lg mb-2">Focus</h3>
               {isEditing ? (
                 <div className="space-y-2">
                   <Textarea
