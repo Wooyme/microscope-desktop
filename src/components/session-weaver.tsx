@@ -31,6 +31,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene } from '@/lib/types';
 import { PanelRight } from 'lucide-react';
 import FocusPanel from './focus-panel';
+import GameSeedModal from './game-seed-modal';
 
 const initialNodes: Node[] = [
   { id: 'period-1', type: 'period', position: { x: 100, y: 100 }, data: { name: 'The Ancient Era', description: 'A time of myth and legends.' } },
@@ -55,6 +56,7 @@ function SessionWeaverFlow() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [focus, setFocus] = useState('');
   const [narrative, setNarrative] = useState<Narrative>({ periods: [] });
+  const [isGameSeedModalOpen, setGameSeedModalOpen] = useState(false);
 
   const { toast } = useToast();
 
@@ -414,6 +416,7 @@ function SessionWeaverFlow() {
                       setReviewMode={setReviewMode}
                       importHistory={importHistory}
                       exportHistory={exportHistory}
+                      onGameSeedClick={() => setGameSeedModalOpen(true)}
                   />
                   {suggestions.length > 0 && !isSuggestionsPanelOpen && (
                       <Button variant="outline" size="icon" onClick={() => setSuggestionsPanelOpen(p => !p)}>
@@ -448,6 +451,10 @@ function SessionWeaverFlow() {
                   onClose={() => setSuggestionsPanelOpen(false)}
                   suggestions={suggestions}
                   onAddEdge={addSuggestedEdge}
+              />
+              <GameSeedModal
+                  isOpen={isGameSeedModalOpen}
+                  onClose={() => setGameSeedModalOpen(false)}
               />
           </div>
       </div>

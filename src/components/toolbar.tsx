@@ -1,4 +1,4 @@
-import { BrainCircuit, CalendarPlus, Milestone, Eye, EyeOff, FileDown, FileUp, Camera } from 'lucide-react';
+import { BrainCircuit, CalendarPlus, Milestone, Eye, EyeOff, FileDown, FileUp, Camera, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
@@ -14,9 +14,10 @@ type ToolbarProps = {
   setReviewMode: (value: boolean) => void;
   exportHistory: () => void;
   importHistory: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onGameSeedClick: () => void;
 };
 
-export default function Toolbar({ addNode, getSuggestions, isGenerating, isReviewMode, setReviewMode, exportHistory, importHistory }: ToolbarProps) {
+export default function Toolbar({ addNode, getSuggestions, isGenerating, isReviewMode, setReviewMode, exportHistory, importHistory, onGameSeedClick }: ToolbarProps) {
   const importInputRef = React.useRef<HTMLInputElement>(null);
 
   return (
@@ -61,6 +62,17 @@ export default function Toolbar({ addNode, getSuggestions, isGenerating, isRevie
           </TooltipTrigger>
           <TooltipContent>
             <p>{isGenerating ? 'Weaving...' : 'Suggest Legacies'}</p>
+          </TooltipContent>
+        </Tooltip>
+        <Separator orientation="vertical" className="h-6" />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" onClick={onGameSeedClick}>
+              <Settings />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Edit Game Seed</p>
           </TooltipContent>
         </Tooltip>
         <Separator orientation="vertical" className="h-6" />
