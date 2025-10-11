@@ -50,10 +50,12 @@ export default function FocusPanel({ focus, setFocus }: FocusPanelProps) {
                   {focus}
                 </p>
               ) : (
-                <div className="text-center py-2">
-                    <p className='text-sm text-muted-foreground mb-2'>No focus set.</p>
-                    <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>Set Focus</Button>
-                </div>
+                <p
+                  className="text-sm text-muted-foreground cursor-pointer"
+                  onClick={() => setIsEditing(true)}
+                >
+                  No focus set.
+                </p>
               )}
             </div>
           </div>
