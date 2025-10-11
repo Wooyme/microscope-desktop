@@ -28,12 +28,13 @@ import AiSuggestionsPanel from '@/components/ai-suggestions-panel';
 import { Button } from './ui/button';
 import { suggestNewLegacies, SuggestNewLegaciesOutput } from '@/ai/flows/suggest-new-legacies';
 import { useToast } from '@/hooks/use-toast';
-import type { Period, Event, Legacy, History } from '@/lib/types';
+import type { Period, Event, Legacy, History, Scene } from '@/lib/types';
 import { PanelRight } from 'lucide-react';
+import FocusPanel from './focus-panel';
 
 const initialNodes: Node[] = [
   { id: 'period-1', type: 'period', position: { x: 100, y: 100 }, data: { name: 'The Ancient Era', description: 'A time of myth and legends.' } },
-  { id: 'event-1', type: 'event', position: { x: 400, y: 250 }, data: { name: 'The Great Upheaval', description: 'A catastrophic event that reshaped the world.' } },
+  { id: 'event-1', type: 'event', position: { x: 400, y: 450 }, data: { name: 'The Great Upheaval', description: 'A catastrophic event that reshaped the world.' } },
 ];
 
 const initialEdges: Edge[] = [];
@@ -48,6 +49,7 @@ function SessionWeaverFlow() {
   const [isSuggestionsPanelOpen, setSuggestionsPanelOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<SuggestNewLegaciesOutput>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [focus, setFocus] = useState('');
 
   const { toast } = useToast();
 
@@ -254,6 +256,9 @@ function SessionWeaverFlow() {
       const events: Event[] = nodes
         .filter((n) => n.type === 'event')
         .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, position: n.position }));
+      const scenes: Scene[] = nodes
+        .filter(n => n.type === 'scene')
+        .map(n => ({ id: n.id, name: n.data.name, description: n.data.description, position: n.position }));
       const legacies: Legacy[] = edges.map((e) => ({
         id: e.id,
         source: e.source,
@@ -261,7 +266,7 @@ function SessionWeaverFlow() {
         description: e.data?.description || '',
       }));
 
-      const history: History = { periods, events, legacies };
+      const history: History = { periods, events, scenes, legacies };
       const dataStr = JSON.stringify(history, null, 2);
       const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
@@ -304,6 +309,12 @@ function SessionWeaverFlow() {
           if (idNum > maxId) maxId = idNum;
           newNodes.push({ id: e.id, type: 'event', position: e.position, data: { name: e.name, description: e.description } });
         });
+        history.scenes?.forEach(s => {
+          const idNum = parseInt(s.id.split('-')[1]);
+          if (idNum > maxId) maxId = idNum;
+          newNodes.push({ id: s.id, type: 'scene', position: s.position, data: { name: s.name, description: s.description } });
+        });
+
 
         const newEdges: Edge[] = history.legacies.map(l => ({
           id: l.id,
@@ -368,6 +379,7 @@ function SessionWeaverFlow() {
                     fitView
                     className={isReviewMode ? 'review-mode' : ''}
                 >
+                    <FocusPanel focus={focus} setFocus={setFocus} />
                     <Background />
                     <Controls />
                 </ReactFlow>
