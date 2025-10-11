@@ -106,6 +106,10 @@ function SessionWeaverFlow() {
     buildNarrative();
   }, [nodes, edges]);
 
+  useEffect(() => {
+    console.log(narrative);
+  }, [narrative]);
+
 
   const updateNodeData = useCallback((nodeId: string, data: any) => {
     setNodes((nds) =>
