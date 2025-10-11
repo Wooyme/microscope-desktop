@@ -39,7 +39,8 @@ function EventNode({ id, data }: NodeProps<{ name: string; description: string; 
           rows={3}
         />
       </CardContent>
-      <Handle type="target" position={Position.Left} className="w-3 h-3 !bg-primary" />
+      <Handle type="target" position={Position.Top} id="period-target" className="w-3 h-3 !bg-primary" />
+      <Handle type="source" position={Position.Bottom} id="scene-source" className="w-3 h-3 !bg-accent" />
     </Card>
   );
 }

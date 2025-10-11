@@ -65,7 +65,7 @@ function SessionWeaverFlow() {
 
   const defaultEdgeOptions: DefaultEdgeOptions = useMemo(() => ({
     animated: true,
-    style: { stroke: 'hsl(var(--accent))', strokeWidth: 2 },
+    style: { strokeWidth: 2 },
   }), []);
 
   const onNodesChange: OnNodesChange = useCallback(
@@ -83,18 +83,14 @@ function SessionWeaverFlow() {
       const sourceNode = nodes.find(node => node.id === connection.source);
       const targetNode = nodes.find(node => node.id === connection.target);
 
-      if (sourceNode?.type === 'event') {
-        toast({
-          variant: 'destructive',
-          title: 'Invalid Connection',
-          description: 'Events cannot be the source of a legacy.',
-        });
-        return;
+      let style = { stroke: 'hsl(var(--accent))' };
+      if (sourceNode?.type === 'period' && targetNode?.type === 'event') {
+        style.stroke = 'hsl(var(--primary))';
       }
 
-      setEdges((eds) => addEdge({ ...connection, data: { description: '' } }, eds))
+      setEdges((eds) => addEdge({ ...connection, data: { description: '' }, style }, eds))
     },
-    [setEdges, nodes, toast]
+    [setEdges, nodes]
   );
 
   const addNode = (type: 'period' | 'event') => {
