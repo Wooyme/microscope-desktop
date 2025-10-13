@@ -27,7 +27,7 @@ export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictur
   };
 
   return (
-    <div className="absolute top-4 left-4 z-10 w-80 space-y-2 p-4 rounded-lg">
+    <div className="absolute top-4 left-4 z-10 w-80 space-y-2 rounded-lg">
        {activePlayer ? (
         <div>
           <h3 className="text-xs uppercase text-muted-foreground font-semibold tracking-wider">Active Player</h3>
