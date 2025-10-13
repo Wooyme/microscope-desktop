@@ -85,6 +85,62 @@ function SessionWeaverFlow() {
 
   const { toast } = useToast();
 
+  const buildNarrative = useCallback(() => {
+    const periodNodes = nodes.filter(n => n.type === 'period');
+    const eventNodes = nodes.filter(n => n.type === 'event');
+    const sceneNodes = nodes.filter(n => n.type === 'scene');
+
+    const narrativePeriods: NarrativePeriod[] = periodNodes.map(pNode => {
+      const childEventIds = edges
+        .filter(e => e.source === pNode.id && nodes.find(n => n.id === e.target)?.type === 'event')
+        .map(e => e.target);
+      
+      const narrativeEvents: NarrativeEvent[] = eventNodes
+        .filter(eNode => childEventIds.includes(eNode.id))
+        .map(eNode => {
+          const childSceneIds = edges
+            .filter(e => e.source === eNode.id && nodes.find(n => n.id === e.target)?.type === 'scene')
+            .map(e => e.target);
+
+          const narrativeScenes: NarrativeScene[] = sceneNodes
+            .filter(sNode => childSceneIds.includes(sNode.id))
+            .map(sNode => ({
+              id: sNode.id,
+              name: sNode.data.name,
+              description: sNode.data.description,
+              imageUrl: sNode.data.imageUrl,
+            }));
+
+          return {
+            id: eNode.id,
+            name: eNode.data.name,
+            description: eNode.data.description,
+            imageUrl: eNode.data.imageUrl,
+            scenes: narrativeScenes,
+          };
+        });
+
+      return {
+        id: pNode.id,
+        name: pNode.data.name,
+        description: pNode.data.description,
+        imageUrl: pNode.data.imageUrl,
+        events: narrativeEvents,
+      };
+    });
+
+    const newNarrative = { 
+      gameSeed,
+      focus,
+      periods: narrativePeriods,
+      historyLog
+    };
+
+    setNarrative(newNarrative);
+    return newNarrative;
+  }, [nodes, edges, gameSeed, focus, historyLog]);
+
+
   const handleEndTurn = useCallback(() => {
     // Log changes
     const newNodes = nodes.filter(n => !nodesAtTurnStart.some(n_start => n_start.id === n.id));
@@ -115,6 +171,7 @@ function SessionWeaverFlow() {
         });
     }
 
+    buildNarrative();
 
     const nextPlayerIndex = players.length > 1 ? (activePlayerIndex + 1) % players.length : 0;
     setActivePlayerIndex(nextPlayerIndex);
@@ -133,66 +190,18 @@ function SessionWeaverFlow() {
             description: "No other players. It's your turn again.",
         })
     }
-  }, [activePlayer, nodes, nodesAtTurnStart, players, activePlayerIndex, toast]);
+  }, [activePlayer, nodes, nodesAtTurnStart, players, activePlayerIndex, toast, buildNarrative]);
 
   useEffect(() => {
-    const buildNarrative = () => {
-      const periodNodes = nodes.filter(n => n.type === 'period');
-      const eventNodes = nodes.filter(n => n.type === 'event');
-      const sceneNodes = nodes.filter(n => n.type === 'scene');
-
-      const narrativePeriods: NarrativePeriod[] = periodNodes.map(pNode => {
-        const childEventIds = edges
-          .filter(e => e.source === pNode.id && nodes.find(n => n.id === e.target)?.type === 'event')
-          .map(e => e.target);
-        
-        const narrativeEvents: NarrativeEvent[] = eventNodes
-          .filter(eNode => childEventIds.includes(eNode.id))
-          .map(eNode => {
-            const childSceneIds = edges
-              .filter(e => e.source === eNode.id && nodes.find(n => n.id === e.target)?.type === 'scene')
-              .map(e => e.target);
-
-            const narrativeScenes: NarrativeScene[] = sceneNodes
-              .filter(sNode => childSceneIds.includes(sNode.id))
-              .map(sNode => ({
-                id: sNode.id,
-                name: sNode.data.name,
-                description: sNode.data.description,
-                imageUrl: sNode.data.imageUrl,
-              }));
-
-            return {
-              id: eNode.id,
-              name: eNode.data.name,
-              description: eNode.data.description,
-              imageUrl: eNode.data.imageUrl,
-              scenes: narrativeScenes,
-            };
-          });
-
-        return {
-          id: pNode.id,
-          name: pNode.data.name,
-          description: pNode.data.description,
-          imageUrl: pNode.data.imageUrl,
-          events: narrativeEvents,
-        };
-      });
-
-      setNarrative({ 
-        gameSeed,
-        focus,
-        periods: narrativePeriods,
-        historyLog
-      });
-    };
-
     buildNarrative();
-  }, [nodes, edges, gameSeed, focus, historyLog]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameSeed, focus, historyLog]);
+
 
   const handleAiTurn = useCallback(async () => {
-    if (!narrative || !activePlayer?.isAI || isAiTurn) return;
+    if (!activePlayer?.isAI || isAiTurn) return;
+
+    const currentNarrative = buildNarrative();
   
     setIsAiTurn(true);
   
@@ -244,7 +253,7 @@ function SessionWeaverFlow() {
   
       // 2. Generate creative content using Genkit
       const content = await generateNodeContent({
-        gameSeed: narrative.gameSeed,
+        gameSeed: currentNarrative.gameSeed,
         personality: activePlayer.personality || 'Neutral',
         nodeType: move.type as 'period' | 'event' | 'scene',
         parentContext: parentNode ? { name: parentNode.data.name, description: parentNode.data.description } : undefined,
@@ -301,7 +310,7 @@ function SessionWeaverFlow() {
         setTimeout(() => setIsAiTurn(false), 1000);
       }
     }
-  }, [narrative, activePlayer, isAiTurn, nodes, handleEndTurn, toast]);
+  }, [activePlayer, isAiTurn, buildNarrative, nodes, edges, handleEndTurn, toast]);
 
   useEffect(() => {
     if (activePlayer?.isAI) {
