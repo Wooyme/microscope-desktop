@@ -9,10 +9,12 @@ import { Button } from '@/components/ui/button';
 import CharacterEditor from '../character-editor';
 import { cn } from '@/lib/utils';
 import { Textarea } from '../ui/textarea';
+import Image from 'next/image';
 
 type PeriodNodeData = {
   name: string;
   description: string;
+  imageUrl?: string;
   updateNodeData: (id: string, data: any) => void;
   addPeriod: (direction: 'left' | 'right', sourceNodeId: string) => void;
   deleteNode: (nodeId: string) => void;
@@ -25,7 +27,7 @@ type PeriodNodeData = {
 }
 
 function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
-  const { name, description, updateNodeData, addPeriod, deleteNode, addEvent, isConnectedLeft, isConnectedRight, disconnectPeer, canCreateNode, canAddChild } = data;
+  const { name, description, imageUrl, updateNodeData, addPeriod, deleteNode, addEvent, isConnectedLeft, isConnectedRight, disconnectPeer, canCreateNode, canAddChild } = data;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,6 +38,10 @@ function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
     if(updateNodeData) updateNodeData(id, { description: value });
   };
   
+  const onImageChange = (url: string | null) => {
+    if (updateNodeData) updateNodeData(id, { imageUrl: url });
+  };
+
   const isEditable = !!updateNodeData;
 
   return (
@@ -49,11 +55,24 @@ function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
           onDisconnectLeft={isConnectedLeft ? () => disconnectPeer(id, 'left') : undefined}
           onDisconnectRight={isConnectedRight ? () => disconnectPeer(id, 'right') : undefined}
         />
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-primary/10">
-          <CardTitle className="text-lg font-headline flex items-center gap-2">
-            <CalendarDays className="w-5 h-5" />
-            Period
-          </CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-primary/10 p-0">
+           {imageUrl ? (
+            <div className="relative w-full h-32">
+              <Image src={imageUrl} alt={name} fill className="object-cover rounded-t-lg" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+              <CardTitle className="text-lg font-headline flex items-center gap-2 absolute bottom-2 left-4 text-white">
+                <CalendarDays className="w-5 h-5" />
+                Period
+              </CardTitle>
+            </div>
+          ) : (
+            <div className='p-4'>
+              <CardTitle className="text-lg font-headline flex items-center gap-2">
+                <CalendarDays className="w-5 h-5" />
+                Period
+              </CardTitle>
+            </div>
+          )}
         </CardHeader>
         <DialogTrigger asChild disabled={!isEditable}>
             <div className={cn(isEditable && "cursor-pointer")}>
@@ -89,6 +108,8 @@ function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
           <CharacterEditor
             content={description}
             onUpdate={onDescriptionChange}
+            imageUrl={imageUrl}
+            onImageUpdate={onImageChange}
           />
         </div>
         <DialogFooter>

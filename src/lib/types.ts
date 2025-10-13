@@ -2,6 +2,7 @@ export type Period = {
     id: string;
     name: string;
     description: string;
+    imageUrl?: string;
     position: { x: number, y: number };
 };
   
@@ -9,6 +10,7 @@ export type Event = {
     id:string;
     name: string;
     description: string;
+    imageUrl?: string;
     position: { x: number, y: number };
 };
 
@@ -16,6 +18,7 @@ export type Scene = {
     id: string;
     name: string;
     description: string;
+    imageUrl?: string;
     position: { x: number, y: number };
 };
   
@@ -53,12 +56,14 @@ export interface NarrativeScene {
   id: string;
   name: string;
   description: string;
+  imageUrl?: string;
 }
 
 export interface NarrativeEvent {
   id: string;
   name: string;
   description: string;
+  imageUrl?: string;
   scenes: NarrativeScene[];
 }
 
@@ -66,6 +71,7 @@ export interface NarrativePeriod {
   id: string;
   name: string;
   description: string;
+  imageUrl?: string;
   events: NarrativeEvent[];
 }
 

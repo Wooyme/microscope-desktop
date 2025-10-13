@@ -163,12 +163,14 @@ function SessionWeaverFlow() {
                 id: sNode.id,
                 name: sNode.data.name,
                 description: sNode.data.description,
+                imageUrl: sNode.data.imageUrl,
               }));
 
             return {
               id: eNode.id,
               name: eNode.data.name,
               description: eNode.data.description,
+              imageUrl: eNode.data.imageUrl,
               scenes: narrativeScenes,
             };
           });
@@ -177,6 +179,7 @@ function SessionWeaverFlow() {
           id: pNode.id,
           name: pNode.data.name,
           description: pNode.data.description,
+          imageUrl: pNode.data.imageUrl,
           events: narrativeEvents,
         };
       });
@@ -500,10 +503,10 @@ function SessionWeaverFlow() {
     try {
       const periods: Period[] = nodes
         .filter((n) => n.type === 'period')
-        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, position: n.position }));
+        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, imageUrl: n.data.imageUrl, position: n.position }));
       const events: Event[] = nodes
         .filter((n) => n.type === 'event')
-        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, position: n.position }));
+        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, imageUrl: n.data.imageUrl, position: n.position }));
       const legacies = edges.map((e) => ({
         id: e.id,
         source: e.source,
@@ -551,13 +554,13 @@ function SessionWeaverFlow() {
     try {
       const periods: Period[] = nodes
         .filter((n) => n.type === 'period')
-        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, position: n.position }));
+        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, imageUrl: n.data.imageUrl, position: n.position }));
       const events: Event[] = nodes
         .filter((n) => n.type === 'event')
-        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, position: n.position }));
+        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, imageUrl: n.data.imageUrl, position: n.position }));
       const scenes: Scene[] = nodes
         .filter(n => n.type === 'scene')
-        .map(n => ({ id: n.id, name: n.data.name, description: n.data.description, position: n.position }));
+        .map(n => ({ id: n.id, name: n.data.name, description: n.data.description, imageUrl: n.data.imageUrl, position: n.position }));
       const legacies: Legacy[] = edges.map((e) => ({
         id: e.id,
         source: e.source,
@@ -601,17 +604,17 @@ function SessionWeaverFlow() {
         history.periods.forEach(p => {
           const idNum = parseInt(p.id.split('-')[1]);
           if (idNum > maxId) maxId = idNum;
-          newNodes.push({ id: p.id, type: 'period', position: p.position, data: { name: p.name, description: p.description } });
+          newNodes.push({ id: p.id, type: 'period', position: p.position, data: { name: p.name, description: p.description, imageUrl: p.imageUrl } });
         });
         history.events.forEach(e => {
           const idNum = parseInt(e.id.split('-')[1]);
           if (idNum > maxId) maxId = idNum;
-          newNodes.push({ id: e.id, type: 'event', position: e.position, data: { name: e.name, description: e.description } });
+          newNodes.push({ id: e.id, type: 'event', position: e.position, data: { name: e.name, description: e.description, imageUrl: e.imageUrl } });
         });
         history.scenes?.forEach(s => {
           const idNum = parseInt(s.id.split('-')[1]);
           if (idNum > maxId) maxId = idNum;
-          newNodes.push({ id: s.id, type: 'scene', position: s.position, data: { name: s.name, description: s.description } });
+          newNodes.push({ id: s.id, type: 'scene', position: s.position, data: { name: s.name, description: s.description, imageUrl: s.imageUrl } });
         });
 
 

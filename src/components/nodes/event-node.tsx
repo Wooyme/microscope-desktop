@@ -9,10 +9,12 @@ import { Button } from '@/components/ui/button';
 import CharacterEditor from '../character-editor';
 import { cn } from '@/lib/utils';
 import { Textarea } from '../ui/textarea';
+import Image from 'next/image';
 
 type EventNodeData = {
   name: string;
   description: string;
+  imageUrl?: string;
   updateNodeData: (id: string, data: any) => void;
   deleteNode: (nodeId: string) => void;
   addScene: (sourceNodeId: string) => void;
@@ -20,7 +22,7 @@ type EventNodeData = {
 };
 
 function EventNode({ id, data }: NodeProps<EventNodeData>) {
-  const { name, description, updateNodeData, deleteNode, addScene, canAddChild } = data;
+  const { name, description, imageUrl, updateNodeData, deleteNode, addScene, canAddChild } = data;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,6 +31,10 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
   
   const onDescriptionChange = (value: string) => {
     if(updateNodeData) updateNodeData(id, { description: value });
+  };
+
+  const onImageChange = (url: string | null) => {
+    if (updateNodeData) updateNodeData(id, { imageUrl: url });
   };
 
   const isEditable = !!updateNodeData;
@@ -40,11 +46,24 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
           onDelete={() => deleteNode(id)}
           onAddChild={canAddChild ? () => addScene(id) : undefined}
         />
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-accent/10">
-          <CardTitle className="text-lg font-headline flex items-center gap-2">
-            <Sparkles className="w-5 h-5" />
-            Event
-          </CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-accent/10 p-0">
+          {imageUrl ? (
+            <div className="relative w-full h-32">
+              <Image src={imageUrl} alt={name} fill className="object-cover rounded-t-lg" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+              <CardTitle className="text-lg font-headline flex items-center gap-2 absolute bottom-2 left-4 text-white">
+                <Sparkles className="w-5 h-5" />
+                Event
+              </CardTitle>
+            </div>
+          ) : (
+            <div className='p-4'>
+              <CardTitle className="text-lg font-headline flex items-center gap-2">
+                <Sparkles className="w-5 h-5" />
+                Event
+              </CardTitle>
+            </div>
+          )}
         </CardHeader>
         <DialogTrigger asChild disabled={!isEditable}>
           <div className={cn(isEditable && "cursor-pointer")}>
@@ -79,6 +98,8 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
           <CharacterEditor
             content={description}
             onUpdate={onDescriptionChange}
+            imageUrl={imageUrl}
+            onImageUpdate={onImageChange}
           />
         </div>
         <DialogFooter>
