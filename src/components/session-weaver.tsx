@@ -33,13 +33,15 @@ import MultiplayerSettingsModal from './multiplayer-settings-modal';
 import TurnPanel from './turn-panel';
 
 const initialNodes: Node[] = [
-  { id: 'period-1', type: 'period', position: { x: 100, y: 100 }, data: { name: 'The Ancient Era', description: 'A time of myth and legends.' } },
-  { id: 'event-1', type: 'event', position: { x: 400, y: 450 }, data: { name: 'The Great Upheaval', description: 'A catastrophic event that reshaped the world.' } },
+  { id: 'period-1', type: 'period', position: { x: 100, y: 100 }, data: { name: 'Bookend: The Beginning', description: 'The start of our history.' } },
+  { id: 'period-2', type: 'period', position: { x: 500, y: 100 }, data: { name: 'Bookend: The End', description: 'The conclusion of our history.' } },
 ];
 
-const initialEdges: Edge[] = [];
+const initialEdges: Edge[] = [
+    { id: 'edge-period-1-period-2', source: 'period-1', target: 'period-2', sourceHandle: 'peer-source', targetHandle: 'peer-target', style: { stroke: 'hsl(var(--accent))' } },
+];
 
-let nodeIdCounter = 2;
+let nodeIdCounter = 3;
 const getUniqueNodeId = (type: string) => `${type}-${nodeIdCounter++}`;
 
 
