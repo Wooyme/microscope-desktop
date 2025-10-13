@@ -410,8 +410,27 @@ function SessionWeaverFlow() {
 
 
   const nodesWithUpdater = useMemo(() => {
-    return nodes.map(n => ({...n, data: {...n.data, updateNodeData, addPeriod, deleteNode, addEvent, addScene }}))
-  }, [nodes, updateNodeData, addPeriod, deleteNode, addEvent, addScene]);
+    const peerEdges = edges.filter(e => e.sourceHandle === 'peer-source');
+    return nodes.map(n => {
+      if (n.type === 'period') {
+        const isConnectedRight = peerEdges.some(e => e.source === n.id);
+        const isConnectedLeft = peerEdges.some(e => e.target === n.id);
+        return {
+          ...n,
+          data: {
+            ...n.data,
+            updateNodeData,
+            addPeriod,
+            deleteNode,
+            addEvent,
+            isConnectedLeft,
+            isConnectedRight,
+          }
+        };
+      }
+      return {...n, data: {...n.data, updateNodeData, addPeriod, deleteNode, addEvent, addScene }};
+    });
+  }, [nodes, edges, updateNodeData, addPeriod, deleteNode, addEvent, addScene]);
 
   return (
     <NarrativeContext.Provider value={{ narrative }}>
