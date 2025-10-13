@@ -37,9 +37,7 @@ const initialNodes: Node[] = [
   { id: 'period-2', type: 'period', position: { x: 500, y: 100 }, data: { name: 'Bookend: The End', description: 'The conclusion of our history.' } },
 ];
 
-const initialEdges: Edge[] = [
-    { id: 'edge-period-1-period-2', source: 'period-1', target: 'period-2', sourceHandle: 'peer-source', targetHandle: 'peer-target', style: { stroke: 'hsl(var(--accent))' } },
-];
+const initialEdges: Edge[] = [];
 
 let nodeIdCounter = 3;
 const getUniqueNodeId = (type: string) => `${type}-${nodeIdCounter++}`;
