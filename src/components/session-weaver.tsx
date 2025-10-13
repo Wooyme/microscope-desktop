@@ -230,6 +230,21 @@ function SessionWeaverFlow() {
     });
   };
 
+  const disconnectPeer = (nodeId: string, direction: 'left' | 'right') => {
+    setEdges(eds => eds.filter(e => {
+      const isPeerEdge = e.sourceHandle === 'peer-source' || e.targetHandle === 'peer-target';
+      if (!isPeerEdge) return true;
+      if (direction === 'left' && e.target === nodeId) return false;
+      if (direction === 'right' && e.source === nodeId) return false;
+      return true;
+    }));
+    toast({
+        title: "Disconnected",
+        description: "The period connection has been removed.",
+    });
+  };
+
+
   const nodeTypes: NodeTypes = useMemo(() => ({
     period: PeriodNode,
     event: EventNode,
@@ -410,7 +425,7 @@ function SessionWeaverFlow() {
 
 
   const nodesWithUpdater = useMemo(() => {
-    const peerEdges = edges.filter(e => e.sourceHandle === 'peer-source');
+    const peerEdges = edges.filter(e => e.sourceHandle === 'peer-source' || e.targetHandle === 'peer-target');
     return nodes.map(n => {
       if (n.type === 'period') {
         const isConnectedRight = peerEdges.some(e => e.source === n.id);
@@ -425,12 +440,13 @@ function SessionWeaverFlow() {
             addEvent,
             isConnectedLeft,
             isConnectedRight,
+            disconnectPeer,
           }
         };
       }
       return {...n, data: {...n.data, updateNodeData, addPeriod, deleteNode, addEvent, addScene }};
     });
-  }, [nodes, edges, updateNodeData, addPeriod, deleteNode, addEvent, addScene]);
+  }, [nodes, edges, updateNodeData, addPeriod, deleteNode, addEvent, addScene, disconnectPeer]);
 
   return (
     <NarrativeContext.Provider value={{ narrative }}>

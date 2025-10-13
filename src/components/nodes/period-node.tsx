@@ -15,10 +15,11 @@ type PeriodNodeData = {
   addEvent: (sourceNodeId: string) => void;
   isConnectedLeft: boolean;
   isConnectedRight: boolean;
+  disconnectPeer: (nodeId: string, direction: 'left' | 'right') => void;
 }
 
 function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
-  const { name, description, updateNodeData, addPeriod, deleteNode, addEvent, isConnectedLeft, isConnectedRight } = data;
+  const { name, description, updateNodeData, addPeriod, deleteNode, addEvent, isConnectedLeft, isConnectedRight, disconnectPeer } = data;
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if(updateNodeData) updateNodeData(id, { name: e.target.value });
@@ -35,6 +36,8 @@ function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
         onAddRight={!isConnectedRight ? () => addPeriod('right', id) : undefined}
         onDelete={() => deleteNode(id)}
         onAddChild={() => addEvent(id)}
+        onDisconnectLeft={isConnectedLeft ? () => disconnectPeer(id, 'left') : undefined}
+        onDisconnectRight={isConnectedRight ? () => disconnectPeer(id, 'right') : undefined}
       />
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-primary/10">
         <CardTitle className="text-lg font-headline flex items-center gap-2">
