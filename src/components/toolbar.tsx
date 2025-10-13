@@ -8,7 +8,6 @@ import React from 'react';
 
 type ToolbarProps = {
   addNode: (type: 'period' | 'event' | 'scene') => void;
-  isGenerating: boolean;
   isGodMode: boolean;
   setGodMode: (value: boolean) => void;
   exportHistory: () => void;
@@ -18,7 +17,7 @@ type ToolbarProps = {
   canCreateNode: boolean;
 };
 
-export default function Toolbar({ addNode, isGenerating, isGodMode, setGodMode, exportHistory, importHistory, onGameSeedClick, onMultiplayerClick, canCreateNode }: ToolbarProps) {
+export default function Toolbar({ addNode, isGodMode, setGodMode, exportHistory, importHistory, onGameSeedClick, onMultiplayerClick, canCreateNode }: ToolbarProps) {
   const importInputRef = React.useRef<HTMLInputElement>(null);
 
   return (
@@ -26,7 +25,7 @@ export default function Toolbar({ addNode, isGenerating, isGodMode, setGodMode, 
       <div className="flex items-center gap-2 p-1 rounded-lg border bg-card">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={() => addNode('period')} disabled={!canCreateNode || isGenerating}>
+            <Button variant="ghost" size="icon" onClick={() => addNode('period')} disabled={!canCreateNode}>
               <CalendarPlus />
             </Button>
           </TooltipTrigger>
@@ -36,7 +35,7 @@ export default function Toolbar({ addNode, isGenerating, isGodMode, setGodMode, 
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={() => addNode('event')} disabled={!canCreateNode || isGenerating}>
+            <Button variant="ghost" size="icon" onClick={() => addNode('event')} disabled={!canCreateNode}>
               <Milestone />
             </Button>
           </TooltipTrigger>
@@ -46,7 +45,7 @@ export default function Toolbar({ addNode, isGenerating, isGodMode, setGodMode, 
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={() => addNode('scene')} disabled={!canCreateNode || isGenerating}>
+            <Button variant="ghost" size="icon" onClick={() => addNode('scene')} disabled={!canCreateNode}>
               <Camera />
             </Button>
           </TooltipTrigger>
@@ -120,5 +119,3 @@ export default function Toolbar({ addNode, isGenerating, isGodMode, setGodMode, 
     </TooltipProvider>
   );
 }
-
-    

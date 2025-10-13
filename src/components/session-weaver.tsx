@@ -31,6 +31,7 @@ import SettingsPanel from './settings-panel';
 import GameSeedModal from './game-seed-modal';
 import MultiplayerSettingsModal from './multiplayer-settings-modal';
 import TurnPanel from './turn-panel';
+import { determineAiMove } from '@/lib/ai-strategies';
 
 const initialNodes: Node[] = [
   { id: 'period-1', type: 'period', position: { x: 100, y: 100 }, data: { name: 'Bookend: The Beginning', description: 'The start of our history.' } },
@@ -217,50 +218,12 @@ function SessionWeaverFlow() {
   
     setIsAiTurn(true);
   
-    // 1. Determine the strategic move programmatically
-    const determineAiMove = () => {
-      const periods = nodes.filter(n => n.type === 'period');
-      const events = nodes.filter(n => n.type === 'event');
-      const scenes = nodes.filter(n => n.type === 'scene');
-  
-      // If timeline is empty, create a root period
-      if (nodes.length === 0) {
-        return { type: 'period', parentId: null };
-      }
-  
-      // Strategy: Prioritize filling out the hierarchy
-      // Find periods with no events
-      const periodsWithoutEvents = periods.filter(p => !edges.some(e => e.source === p.id && events.some(ev => ev.id === e.target)));
-      if (periodsWithoutEvents.length > 0) {
-        const parentNode = periodsWithoutEvents[Math.floor(Math.random() * periodsWithoutEvents.length)];
-        return { type: 'event', parentId: parentNode.id };
-      }
-  
-      // Find events with no scenes
-      const eventsWithoutScenes = events.filter(ev => !edges.some(e => e.source === ev.id && scenes.some(s => s.id === e.target)));
-      if (eventsWithoutScenes.length > 0) {
-        const parentNode = eventsWithoutScenes[Math.floor(Math.random() * eventsWithoutScenes.length)];
-        return { type: 'scene', parentId: parentNode.id };
-      }
-  
-      // Fallback strategy: Add a new period or scene randomly
-      const randomChoice = Math.random();
-      if (randomChoice < 0.3 && periods.length > 0) { // Add new peer period
-        const parentNode = periods[Math.floor(Math.random() * periods.length)];
-        return { type: 'period', parentId: parentNode.id };
-      } else if (randomChoice < 0.7 && events.length > 0) { // Add a new scene
-        const parentNode = events[Math.floor(Math.random() * events.length)];
-        return { type: 'scene', parentId: parentNode.id };
-      } else if (periods.length > 0) { // Add a new event
-        const parentNode = periods[Math.floor(Math.random() * periods.length)];
-        return { type: 'event', parentId: parentNode.id };
-      } else { // Default to creating a root period if logic fails
-        return { type: 'period', parentId: null };
-      }
-    };
-  
     try {
-      const move = determineAiMove();
+      const move = determineAiMove(nodes, edges, activePlayer.personality);
+      if (!move) {
+        throw new Error("AI could not determine a valid move.");
+      }
+
       const parentNode = nodes.find(n => n.id === move.parentId);
   
       // 2. Generate creative content using Genkit
@@ -655,7 +618,6 @@ function SessionWeaverFlow() {
               <div className="flex items-center gap-4">
                   <Toolbar
                       addNode={addNode}
-                      isGenerating={isAiTurn}
                       isGodMode={isGodMode}
                       setGodMode={setGodMode}
                       importHistory={importHistory}
@@ -725,5 +687,3 @@ export default function SessionWeaver() {
         </ReactFlowProvider>
     )
 }
-
-    
