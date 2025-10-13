@@ -60,7 +60,7 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
                <Textarea
                 value={description.replace(/<[^>]+>/g, '')}
                 placeholder="Click to add a description..."
-                className="text-sm text-muted-foreground h-[60px] overflow-hidden bg-transparent p-0 border-0 resize-none focus-visible:ring-0"
+                className="text-sm"
                 readOnly
                 disabled={!isEditable}
                 rows={3}
