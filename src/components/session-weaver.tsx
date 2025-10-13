@@ -91,7 +91,14 @@ function SessionWeaverFlow() {
     // Log changes
     const newNodes = nodes.filter(n => !nodesAtTurnStart.some(n_start => n_start.id === n.id));
     if (newNodes.length > 0) {
-        const summary = newNodes.map(n => `a ${n.type} named '${n.data.name}'`).join(' and ');
+        const summary = newNodes.map(n => {
+            let nodeSummary = `a ${n.type} named '${n.data.name}'`;
+            if (n.data.description) {
+                nodeSummary += ` with description: "${n.data.description}"`;
+            }
+            return nodeSummary;
+        }).join(' and ');
+        
         const logSummary = `${activePlayer.name} added ${summary}.`;
         
         const newLogEntry: LogEntry = {
@@ -198,17 +205,15 @@ function SessionWeaverFlow() {
   }, []);
   
   const handleNodeCreation = (newNodeId: string) => {
-    setNodesCreatedThisTurn(c => {
-      const newCount = c + 1;
-      if (isHost && newCount === 1) {
-        setFirstNodeThisTurnId(newNodeId);
-      }
-      return newCount;
-    });
+    if (isHost && nodesCreatedThisTurn === 0) {
+      setFirstNodeThisTurnId(newNodeId);
+    }
+    setNodesCreatedThisTurn(c => c + 1);
   }
 
   const addNode = (type: 'period' | 'event' | 'scene') => {
-    if (!canCreateNode || (isHost && nodesCreatedThisTurn > 0)) return;
+    if (!canCreateNode) return;
+    if (isHost && nodesCreatedThisTurn > 0) return;
     const newNodeId = getUniqueNodeId(type);
     const newNode: Node = {
       id: newNodeId,
@@ -221,7 +226,8 @@ function SessionWeaverFlow() {
   };
   
   const addPeriod = (direction: 'left' | 'right', sourceNodeId: string) => {
-    if (!canCreateNode || (isHost && nodesCreatedThisTurn > 0)) return;
+    if (!canCreateNode) return;
+    if (isHost && nodesCreatedThisTurn > 0) return;
     const sourceNode = nodes.find(n => n.id === sourceNodeId);
     if (!sourceNode) return;
   
