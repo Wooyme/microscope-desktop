@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { X, PlusCircle, User, Bot } from 'lucide-react';
+import { X, PlusCircle, User, Bot, ChevronDown } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { Player } from '@/lib/types';
 import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 type MultiplayerSettingsModalProps = {
   isOpen: boolean;
@@ -30,6 +31,8 @@ const getInitials = (name: string) => {
 let playerIdCounter = 3;
 const getUniquePlayerId = () => `player-${playerIdCounter++}`;
 
+const aiPersonalities = ["Creative", "Logical", "Chaotic", "Historian", "Pragmatist"];
+
 export default function MultiplayerSettingsModal({ isOpen, onClose, players, setPlayers }: MultiplayerSettingsModalProps) {
   const [newPlayerName, setNewPlayerName] = useState('');
 
@@ -44,13 +47,14 @@ export default function MultiplayerSettingsModal({ isOpen, onClose, players, set
     }
   };
 
-  const handleAddAiPlayer = () => {
+  const handleAddAiPlayer = (personality: string) => {
     const aiPlayers = players.filter(p => p.isAI);
-    const newAiName = `AI Player ${aiPlayers.length + 1}`;
+    const newAiName = `AI ${personality} ${aiPlayers.length + 1}`;
     const newPlayer: Player = {
       id: getUniquePlayerId(),
       name: newAiName,
       isAI: true,
+      personality,
     };
     setPlayers([...players, newPlayer]);
   };
@@ -86,10 +90,24 @@ export default function MultiplayerSettingsModal({ isOpen, onClose, players, set
           
           <div className="space-y-2">
              <Label>Add AI Player</Label>
-             <Button variant="outline" className="w-full" onClick={handleAddAiPlayer}>
-                <Bot className="mr-2" />
-                Add AI Player
-            </Button>
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between">
+                        <div className="flex items-center gap-2">
+                         <Bot />
+                         <span>Add AI Player</span>
+                        </div>
+                        <ChevronDown />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+                    {aiPersonalities.map(p => (
+                         <DropdownMenuItem key={p} onClick={() => handleAddAiPlayer(p)}>
+                            {p}
+                         </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+             </DropdownMenu>
           </div>
           
           <Separator />
@@ -104,9 +122,9 @@ export default function MultiplayerSettingsModal({ isOpen, onClose, players, set
                       <Avatar>
                         <AvatarFallback>{getInitials(player.name)}</AvatarFallback>
                       </Avatar>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col">
                         <span className="font-medium text-secondary-foreground">{player.name}</span>
-                        {player.isAI && <Bot className="text-muted-foreground" size={16} />}
+                        {player.isAI && <div className="flex items-center gap-1"><Bot className="text-muted-foreground" size={14} /><span className="text-xs text-muted-foreground">{player.personality}</span></div>}
                       </div>
                     </div>
                     <Button

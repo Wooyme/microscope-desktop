@@ -37,6 +37,7 @@ export type Player = {
   id: string;
   name: string;
   isAI?: boolean;
+  personality?: string;
 };
 
 export type LogEntry = {

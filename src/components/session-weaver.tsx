@@ -96,7 +96,7 @@ function SessionWeaverFlow() {
         const summary = newNodes.map(n => {
             let nodeSummary = `a ${n.type} named '${n.data.name}'`;
             if (n.data.description) {
-                nodeSummary += ` with description: "${n.data.description}"`;
+                nodeSummary += ` with description: "${n.data.description.replace(/<[^>]+>/g, '')}"`;
             }
             return nodeSummary;
         }).join(' and ');
@@ -196,7 +196,7 @@ function SessionWeaverFlow() {
 
     setIsAiTurn(true);
     try {
-        const move = await suggestNextMove(narrative);
+        const move = await suggestNextMove({ narrative, player: activePlayer });
 
         if (move.node) {
             const { type, name, description, parentId } = move.node;

@@ -9,9 +9,17 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import type { Narrative } from '@/lib/types';
+import type { Narrative, Player } from '@/lib/types';
 
-export type SuggestNextMoveInput = Narrative;
+export type SuggestNextMoveInput = {
+    narrative: Narrative;
+    player: Player;
+};
+
+const SuggestNextMoveInputSchema = z.object({
+    narrative: z.custom<Narrative>(),
+    player: z.custom<Player>(),
+});
 
 const SuggestNextMoveOutputSchema = z.object({
   node: z.object({
@@ -26,7 +34,6 @@ const SuggestNextMoveOutputSchema = z.object({
 export type SuggestNextMoveOutput = z.infer<typeof SuggestNextMoveOutputSchema>;
 
 export async function suggestNextMove(input: SuggestNextMoveInput): Promise<SuggestNextMoveOutput> {
-  const SuggestNextMoveInputSchema = z.custom<Narrative>();
   
   const suggestNextMoveFlow = ai.defineFlow(
     {
@@ -34,32 +41,33 @@ export async function suggestNextMove(input: SuggestNextMoveInput): Promise<Sugg
       inputSchema: SuggestNextMoveInputSchema,
       outputSchema: SuggestNextMoveOutputSchema,
     },
-    async (narrative) => {
+    async ({ narrative, player }) => {
       const prompt = ai.definePrompt({
         name: 'suggestNextMovePrompt',
         input: { schema: SuggestNextMoveInputSchema },
         output: { schema: SuggestNextMoveOutputSchema },
         prompt: `You are an AI player in a collaborative storytelling game called Microscope.
         Your goal is to add to the shared timeline by creating a new Period, Event, or Scene.
+        You have a specific personality that should guide your choices: ${player.personality || 'Neutral'}.
 
         Here is the current state of the game:
         
-        BIG PICTURE: {{gameSeed.bigPicture}}
+        BIG PICTURE: {{narrative.gameSeed.bigPicture}}
 
         PALETTE (things to include):
-        {{#each gameSeed.palette}}
+        {{#each narrative.gameSeed.palette}}
         - {{this}}
         {{/each}}
         
         BANNED (things to avoid):
-        {{#each gameSeed.banned}}
+        {{#each narrative.gameSeed.banned}}
         - {{this}}
         {{/each}}
 
-        FOCUS: {{focus}}
+        FOCUS: {{narrative.focus}}
 
         EXISTING TIMELINE:
-        {{#each periods}}
+        {{#each narrative.periods}}
         Period: "{{this.name}}" (ID: {{this.id}}) - {{this.description}}
           {{#each this.events}}
           Event: "{{this.name}}" (ID: {{this.id}}) - {{this.description}}
@@ -82,7 +90,7 @@ export async function suggestNextMove(input: SuggestNextMoveInput): Promise<Sugg
         5. If there are no periods, you must create a period. The parentId can be an empty string.
         6. If there are periods but no events, you should probably create an event.
         7. If there are events but no scenes, you should probably create a scene.
-        8. Be creative and build upon what is already there.
+        8. Be creative and build upon what is already there, always keeping your personality in mind: ${player.personality || 'Neutral'}.
 
         Based on the rules and the current timeline, decide what to add. Return your decision in the specified JSON format.
         `,
@@ -91,9 +99,9 @@ export async function suggestNextMove(input: SuggestNextMoveInput): Promise<Sugg
       // If there are no nodes at all, create a root period.
       if (narrative.periods.length === 0) {
         const output = await ai.generate({
-          prompt: `You are an AI player in a collaborative storytelling game called Microscope.
+          prompt: `You are an AI player with a "${player.personality || 'Neutral'}" personality in a collaborative storytelling game called Microscope.
           The goal is to create a timeline. The timeline is currently empty.
-          Your first task is to create the very first Period for the timeline.
+          Your first task is to create the very first Period for the timeline, according to your personality.
           
           BIG PICTURE: ${narrative.gameSeed.bigPicture}
           PALETTE (things to include): ${narrative.gameSeed.palette.join(', ')}
@@ -115,11 +123,11 @@ export async function suggestNextMove(input: SuggestNextMoveInput): Promise<Sugg
             description: output.output!.description,
             parentId: '', // No parent for the first period
           },
-          reason: 'The timeline was empty, so I created the first period to start things off.',
+          reason: `As a ${player.personality || 'Neutral'} AI, I decided to start the timeline with this period because the timeline was empty.`,
         };
       }
 
-      const { output } = await prompt(narrative);
+      const { output } = await prompt({ narrative, player });
       return output!;
     }
   );
