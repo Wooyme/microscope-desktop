@@ -13,29 +13,20 @@ import type { Narrative } from '@/lib/types';
 
 export type SuggestNextMoveInput = Narrative;
 
-export type SuggestNextMoveOutput = {
-  action: 'addNode';
-  node: {
-    type: 'period' | 'event' | 'scene';
-    name: string;
-    description: string;
-    parentId: string;
-  };
-  reason: string;
-};
+const SuggestNextMoveOutputSchema = z.object({
+  node: z.object({
+    type: z.enum(['period', 'event', 'scene']),
+    name: z.string().describe('The name of the new node.'),
+    description: z.string().describe('A description for the new node.'),
+    parentId: z.string().describe('The ID of the parent node to connect to. For a new Period, this can be another Period ID to connect to, or an empty string to create a root Period.'),
+  }),
+  reason: z.string().describe('The reasoning behind why this move was chosen.'),
+});
+
+export type SuggestNextMoveOutput = z.infer<typeof SuggestNextMoveOutputSchema>;
 
 export async function suggestNextMove(input: SuggestNextMoveInput): Promise<SuggestNextMoveOutput> {
   const SuggestNextMoveInputSchema = z.custom<Narrative>();
-  const SuggestNextMoveOutputSchema = z.object({
-    action: z.literal('addNode'),
-    node: z.object({
-      type: z.enum(['period', 'event', 'scene']),
-      name: z.string().describe('The name of the new node.'),
-      description: z.string().describe('A description for the new node.'),
-      parentId: z.string().describe('The ID of the parent node to connect to. For a new Period, this can be another Period ID to connect to, or an empty string to create a root Period.'),
-    }),
-    reason: z.string().describe('The reasoning behind why this move was chosen.'),
-  });
   
   const suggestNextMoveFlow = ai.defineFlow(
     {
@@ -49,7 +40,7 @@ export async function suggestNextMove(input: SuggestNextMoveInput): Promise<Sugg
         input: { schema: SuggestNextMoveInputSchema },
         output: { schema: SuggestNextMoveOutputSchema },
         prompt: `You are an AI player in a collaborative storytelling game called Microscope.
-        Your goal is to add to the shared timeline by creating new Periods, Events, or Scenes.
+        Your goal is to add to the shared timeline by creating a new Period, Event, or Scene.
 
         Here is the current state of the game:
         
@@ -118,7 +109,6 @@ export async function suggestNextMove(input: SuggestNextMoveInput): Promise<Sugg
           }
         });
         return {
-          action: 'addNode',
           node: {
             type: 'period',
             name: output.output!.name,

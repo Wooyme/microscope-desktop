@@ -198,7 +198,7 @@ function SessionWeaverFlow() {
     try {
         const move = await suggestNextMove(narrative);
 
-        if (move.action === 'addNode' && move.node) {
+        if (move.node) {
             const { type, name, description, parentId } = move.node;
             
             let newNode: Node | null = null;
