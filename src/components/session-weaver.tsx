@@ -142,6 +142,18 @@ function SessionWeaverFlow() {
 
 
   const handleEndTurn = useCallback(() => {
+    // Validation check
+    for (const node of nodes) {
+      if (!node.data.name || !node.data.description) {
+        toast({
+          variant: 'destructive',
+          title: 'Incomplete Nodes',
+          description: `Please ensure all nodes have a name and a description before ending the turn. Node "${node.data.name || node.id}" is incomplete.`,
+        });
+        return;
+      }
+    }
+
     // Log changes
     const newNodes = nodes.filter(n => !nodesAtTurnStart.some(n_start => n_start.id === n.id));
     if (newNodes.length > 0) {
@@ -343,7 +355,7 @@ function SessionWeaverFlow() {
       id: newNodeId,
       type,
       position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 50 },
-      data: { name: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`, description: '' },
+      data: { name: '', description: '' },
     };
     setNodes((nds) => nds.concat(newNode));
     handleNodeCreation(newNodeId);
@@ -363,7 +375,7 @@ function SessionWeaverFlow() {
       id: newNodeId,
       type: 'period',
       position: { x: sourceNode.position.x + xOffset, y: sourceNode.position.y },
-      data: { name: 'New Period', description: '' },
+      data: { name: '', description: '' },
     };
   
     const newEdge: Edge = {
@@ -394,7 +406,7 @@ function SessionWeaverFlow() {
       id: newNodeId,
       type: 'event',
       position: { x: sourceNode.position.x, y: sourceNode.position.y + 350 },
-      data: { name: 'New Event', description: '' },
+      data: { name: '', description: '' },
     };
   
     const newEdge: Edge = {
@@ -425,7 +437,7 @@ function SessionWeaverFlow() {
       id: newNodeId,
       type: 'scene',
       position: { x: sourceNode.position.x, y: sourceNode.position.y + 350 },
-      data: { name: 'New Scene', description: '' },
+      data: { name: '', description: '' },
     };
 
     const newEdge: Edge = {
