@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Button } from '@/components/ui/button';
 import CharacterEditor from '../character-editor';
 import { cn } from '@/lib/utils';
+import { Textarea } from '../ui/textarea';
 
 type EventNodeData = {
   name: string;
@@ -28,12 +29,6 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
   
   const onDescriptionChange = (value: string) => {
     if(updateNodeData) updateNodeData(id, { description: value });
-  };
-
-  const truncateText = (text: string, maxLength: number) => {
-    if (!text) return "Click to add a description...";
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
   };
 
   const isEditable = !!updateNodeData;
@@ -62,9 +57,14 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
                 className="text-base font-semibold"
                 disabled={!isEditable}
               />
-              <p className="text-sm text-muted-foreground h-[60px] overflow-hidden">
-                {truncateText(description.replace(/<[^>]+>/g, ''), 100)}
-              </p>
+               <Textarea
+                value={description.replace(/<[^>]+>/g, '')}
+                placeholder="Click to add a description..."
+                className="text-sm text-muted-foreground h-[60px] overflow-hidden bg-transparent p-0 border-0 resize-none focus-visible:ring-0"
+                readOnly
+                disabled={!isEditable}
+                rows={3}
+              />
             </CardContent>
           </div>
         </DialogTrigger>
