@@ -1,10 +1,8 @@
 'use client';
 
 import { Button } from './ui/button';
-import { ArrowRight, User } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import type { Player } from '@/lib/types';
-import { Avatar, AvatarFallback } from './ui/avatar';
-import { getInitials } from '@/lib/utils';
 import {
     Tooltip,
     TooltipContent,
@@ -42,25 +40,6 @@ export default function TurnPanel({ onEndTurn, nextPlayer, nodesCreatedThisTurn,
                 </TooltipContent>
             </Tooltip>
         </TooltipProvider>
-
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Next:</span>
-        {nextPlayer ? (
-          <div className="flex items-center gap-2">
-            <Avatar className="h-7 w-7">
-              <AvatarFallback>{getInitials(nextPlayer.name)}</AvatarFallback>
-            </Avatar>
-            <span className="text-sm font-semibold text-foreground">{nextPlayer.name}</span>
-          </div>
-        ) : (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span>No other players</span>
-            </div>
-        )}
-      </div>
     </div>
   );
 }
-
-    
