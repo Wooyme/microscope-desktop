@@ -108,6 +108,7 @@ function SessionWeaverFlow() {
             playerName: activePlayer.name,
             summary: logSummary,
             timestamp: new Date().toISOString(),
+            addedNodeIds: newNodes.map(n => n.id),
         };
 
         setHistoryLog(prev => [...prev, newLogEntry]);

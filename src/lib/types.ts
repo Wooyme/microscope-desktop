@@ -45,6 +45,7 @@ export type LogEntry = {
     playerName: string;
     summary: string;
     timestamp: string;
+    addedNodeIds: string[];
 }
 
 // Types for the hierarchical narrative context
