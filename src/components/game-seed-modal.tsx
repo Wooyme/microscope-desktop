@@ -58,7 +58,7 @@ export default function GameSeedModal({ isOpen, onClose, gameSeed, setGameSeed }
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-grow overflow-y-auto pr-4 space-y-6">
+        <div className="flex-grow overflow-y-auto px-1 space-y-6">
             <div>
               <Label htmlFor="big-picture" className="text-lg font-semibold">The Big Picture</Label>
               <Textarea
