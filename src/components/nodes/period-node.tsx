@@ -17,10 +17,11 @@ type PeriodNodeData = {
   isConnectedRight: boolean;
   disconnectPeer: (nodeId: string, direction: 'left' | 'right') => void;
   canCreateNode: boolean;
+  canAddChild: boolean;
 }
 
 function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
-  const { name, description, updateNodeData, addPeriod, deleteNode, addEvent, isConnectedLeft, isConnectedRight, disconnectPeer, canCreateNode } = data;
+  const { name, description, updateNodeData, addPeriod, deleteNode, addEvent, isConnectedLeft, isConnectedRight, disconnectPeer, canCreateNode, canAddChild } = data;
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if(updateNodeData) updateNodeData(id, { name: e.target.value });
@@ -33,10 +34,10 @@ function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
   return (
     <Card className="w-64 shadow-lg border-2 border-primary/50 group relative">
       <NodeToolbar
-        onAddLeft={!isConnectedLeft ? () => addPeriod('left', id) : undefined}
-        onAddRight={!isConnectedRight ? () => addPeriod('right', id) : undefined}
+        onAddLeft={canCreateNode && !isConnectedLeft ? () => addPeriod('left', id) : undefined}
+        onAddRight={canCreateNode && !isConnectedRight ? () => addPeriod('right', id) : undefined}
         onDelete={() => deleteNode(id)}
-        onAddChild={canCreateNode ? () => addEvent(id) : undefined}
+        onAddChild={canAddChild ? () => addEvent(id) : undefined}
         onDisconnectLeft={isConnectedLeft ? () => disconnectPeer(id, 'left') : undefined}
         onDisconnectRight={isConnectedRight ? () => disconnectPeer(id, 'right') : undefined}
       />

@@ -71,18 +71,24 @@ function SessionWeaverFlow() {
   const [isMultiplayerModalOpen, setMultiplayerModalOpen] = useState(false);
   const [activePlayerIndex, setActivePlayerIndex] = useState(0);
   const [nodesCreatedThisTurn, setNodesCreatedThisTurn] = useState(0);
+  const [firstNodeThisTurnId, setFirstNodeThisTurnId] = useState<string | null>(null);
 
   const activePlayer = players[activePlayerIndex];
   const nextPlayer = players[(activePlayerIndex + 1) % players.length];
   const isHost = activePlayerIndex === 0;
   const maxNodesPerTurn = isHost ? 2 : 1;
   const canCreateNode = nodesCreatedThisTurn < maxNodesPerTurn;
+  
+  // Specific logic for host's second move
+  const canHostCreateGlobalNode = isHost ? nodesCreatedThisTurn === 0 : canCreateNode;
+
 
   const { toast } = useToast();
 
   const handleEndTurn = () => {
     setActivePlayerIndex((prevIndex) => (prevIndex + 1) % players.length);
     setNodesCreatedThisTurn(0);
+    setFirstNodeThisTurnId(null);
     toast({
         title: "Turn Ended",
         description: `It's now ${nextPlayer.name}'s turn.`,
@@ -155,21 +161,32 @@ function SessionWeaverFlow() {
       )
     );
   }, []);
+  
+  const handleNodeCreation = (newNodeId: string) => {
+    setNodesCreatedThisTurn(c => {
+      const newCount = c + 1;
+      if (isHost && newCount === 1) {
+        setFirstNodeThisTurnId(newNodeId);
+      }
+      return newCount;
+    });
+  }
 
   const addNode = (type: 'period' | 'event' | 'scene') => {
-    if (!canCreateNode) return;
+    if (!canCreateNode || (isHost && nodesCreatedThisTurn > 0)) return;
+    const newNodeId = getUniqueNodeId(type);
     const newNode: Node = {
-      id: getUniqueNodeId(type),
+      id: newNodeId,
       type,
       position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 50 },
       data: { name: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`, description: '' },
     };
     setNodes((nds) => nds.concat(newNode));
-    setNodesCreatedThisTurn(c => c + 1);
+    handleNodeCreation(newNodeId);
   };
   
   const addPeriod = (direction: 'left' | 'right', sourceNodeId: string) => {
-    if (!canCreateNode) return;
+    if (!canCreateNode || (isHost && nodesCreatedThisTurn > 0)) return;
     const sourceNode = nodes.find(n => n.id === sourceNodeId);
     if (!sourceNode) return;
   
@@ -194,11 +211,13 @@ function SessionWeaverFlow() {
   
     setNodes(nds => nds.concat(newNode));
     setEdges(eds => addEdge(newEdge, eds));
-    setNodesCreatedThisTurn(c => c + 1);
+    handleNodeCreation(newNodeId);
   };
 
   const addEvent = (sourceNodeId: string) => {
     if (!canCreateNode) return;
+    if (isHost && nodesCreatedThisTurn > 0 && sourceNodeId !== firstNodeThisTurnId) return;
+
     const sourceNode = nodes.find(n => n.id === sourceNodeId);
     if (!sourceNode || sourceNode.type !== 'period') return;
   
@@ -222,11 +241,13 @@ function SessionWeaverFlow() {
   
     setNodes(nds => nds.concat(newNode));
     setEdges(eds => addEdge(newEdge, eds));
-    setNodesCreatedThisTurn(c => c + 1);
+    handleNodeCreation(newNodeId);
   };
 
   const addScene = (sourceNodeId: string) => {
     if (!canCreateNode) return;
+    if (isHost && nodesCreatedThisTurn > 0 && sourceNodeId !== firstNodeThisTurnId) return;
+
     const sourceNode = nodes.find(n => n.id === sourceNodeId);
     if (!sourceNode || sourceNode.type !== 'event') return;
 
@@ -250,7 +271,7 @@ function SessionWeaverFlow() {
 
     setNodes(nds => nds.concat(newNode));
     setEdges(eds => addEdge(newEdge, eds));
-    setNodesCreatedThisTurn(c => c + 1);
+    handleNodeCreation(newNodeId);
   };
   
   const deleteNode = (nodeId: string) => {
@@ -459,6 +480,7 @@ function SessionWeaverFlow() {
   const nodesWithUpdater = useMemo(() => {
     const peerEdges = edges.filter(e => e.sourceHandle === 'peer-source' || e.targetHandle === 'peer-target');
     return nodes.map(n => {
+        const canAddChild = canCreateNode && (!isHost || nodesCreatedThisTurn === 0 || (nodesCreatedThisTurn === 1 && firstNodeThisTurnId === n.id));
       if (n.type === 'period') {
         const isConnectedRight = peerEdges.some(e => e.source === n.id);
         const isConnectedLeft = peerEdges.some(e => e.target === n.id);
@@ -473,7 +495,8 @@ function SessionWeaverFlow() {
             isConnectedLeft,
             isConnectedRight,
             disconnectPeer,
-            canCreateNode,
+            canCreateNode: canHostCreateGlobalNode,
+            canAddChild: canAddChild,
           }
         };
       }
@@ -485,13 +508,13 @@ function SessionWeaverFlow() {
             updateNodeData,
             deleteNode,
             addScene,
-            canCreateNode,
+            canAddChild: canAddChild,
           }
         };
       }
       return {...n, data: {...n.data, updateNodeData, deleteNode }};
     });
-  }, [nodes, edges, updateNodeData, addPeriod, deleteNode, addEvent, addScene, disconnectPeer, canCreateNode]);
+  }, [nodes, edges, updateNodeData, addPeriod, deleteNode, addEvent, addScene, disconnectPeer, canCreateNode, canHostCreateGlobalNode, nodesCreatedThisTurn, firstNodeThisTurnId, isHost]);
 
   return (
     <NarrativeContext.Provider value={{ narrative }}>
@@ -509,7 +532,7 @@ function SessionWeaverFlow() {
                       exportHistory={exportHistory}
                       onGameSeedClick={() => setGameSeedModalOpen(true)}
                       onMultiplayerClick={() => setMultiplayerModalOpen(true)}
-                      canCreateNode={canCreateNode}
+                      canCreateNode={canHostCreateGlobalNode}
                   />
                   {suggestions.length > 0 && !isSuggestionsPanelOpen && (
                       <Button variant="outline" size="icon" onClick={() => setSuggestionsPanelOpen(p => !p)}>
