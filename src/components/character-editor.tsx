@@ -81,13 +81,11 @@ export default function CharacterEditor({ content, onUpdate, imageUrl, onImageUp
                         />
                     </div>
                 </div>
-                <div className="w-full aspect-video bg-muted rounded-md flex items-center justify-center overflow-hidden">
-                {imageUrl ? (
-                    <Image src={imageUrl} alt="Banner image" width={550} height={310} className="object-cover w-full h-full" />
-                ) : (
-                   null
+                {imageUrl && (
+                  <div className="w-full aspect-video bg-muted rounded-md flex items-center justify-center overflow-hidden">
+                      <Image src={imageUrl} alt="Banner image" width={550} height={310} className="object-cover w-full h-full" />
+                  </div>
                 )}
-                </div>
             </div>
         )}
         <div className="border rounded-md">
