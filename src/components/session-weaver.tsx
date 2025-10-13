@@ -24,13 +24,9 @@ import PeriodNode from '@/components/nodes/period-node';
 import EventNode from '@/components/nodes/event-node';
 import SceneNode from '@/components/nodes/scene-node';
 import Toolbar from '@/components/toolbar';
-import AiSuggestionsPanel from '@/components/ai-suggestions-panel';
-import { Button } from './ui/button';
-import { suggestNewLegacies, SuggestNewLegaciesOutput } from '@/ai/flows/suggest-new-legacies';
 import { generateNodeContent } from '@/ai/flows/suggest-next-move';
 import { useToast } from '@/hooks/use-toast';
 import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene, GameSeed, Player, LogEntry } from '@/lib/types';
-import { PanelRight } from 'lucide-react';
 import SettingsPanel from './settings-panel';
 import GameSeedModal from './game-seed-modal';
 import MultiplayerSettingsModal from './multiplayer-settings-modal';
@@ -54,9 +50,6 @@ function SessionWeaverFlow() {
   const [nodes, setNodes] = useState<Node<any>[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const [isGodMode, setGodMode] = useState(false);
-  const [isSuggestionsPanelOpen, setSuggestionsPanelOpen] = useState(false);
-  const [suggestions, setSuggestions] = useState<SuggestNewLegaciesOutput>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isAiTurn, setIsAiTurn] = useState(false);
   const [focus, setFocus] = useState('');
   const [narrative, setNarrative] = useState<Narrative | null>(null);
@@ -500,59 +493,6 @@ function SessionWeaverFlow() {
     [setEdges, nodes]
   );
 
-
-  const handleGetSuggestions = async () => {
-    setIsGenerating(true);
-    try {
-      const periods: Period[] = nodes
-        .filter((n) => n.type === 'period')
-        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, imageUrl: n.data.imageUrl, position: n.position }));
-      const events: Event[] = nodes
-        .filter((n) => n.type === 'event')
-        .map((n) => ({ id: n.id, name: n.data.name, description: n.data.description, imageUrl: n.data.imageUrl, position: n.position }));
-      const legacies = edges.map((e) => ({
-        id: e.id,
-        source: e.source,
-        target: e.target,
-        description: e.data?.description || '',
-      }));
-
-      const result = await suggestNewLegacies({ periods, events, legacies });
-      setSuggestions(result);
-      if (result.length > 0) {
-        setSuggestionsPanelOpen(true);
-      } else {
-        toast({
-          title: "No new suggestions",
-          description: "The AI couldn't find any new connections to suggest.",
-        });
-      }
-    } catch (error) {
-      console.error('Error getting AI suggestions:', error);
-      toast({
-        variant: 'destructive',
-        title: "Error",
-        description: "Failed to get AI suggestions.",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const addSuggestedEdge = (source: string, target: string, reason: string) => {
-    const newEdge = {
-        source,
-        target,
-        id: `edge-${source}-${target}-${Math.random()}`,
-        data: { description: reason },
-    };
-    setEdges((eds) => addEdge(newEdge, eds));
-    toast({
-        title: "Legacy Added",
-        description: "A new legacy has been woven into your narrative.",
-    });
-  };
-
   const exportHistory = () => {
     try {
       const periods: Period[] = nodes
@@ -694,8 +634,7 @@ function SessionWeaverFlow() {
               <div className="flex items-center gap-4">
                   <Toolbar
                       addNode={addNode}
-                      getSuggestions={handleGetSuggestions}
-                      isGenerating={isGenerating || isAiTurn}
+                      isGenerating={isAiTurn}
                       isGodMode={isGodMode}
                       setGodMode={setGodMode}
                       importHistory={importHistory}
@@ -704,11 +643,6 @@ function SessionWeaverFlow() {
                       onMultiplayerClick={() => setMultiplayerModalOpen(true)}
                       canCreateNode={(inGodMode || canHostCreateGlobalNode) && !activePlayer?.isAI}
                   />
-                  {suggestions.length > 0 && !isSuggestionsPanelOpen && (
-                      <Button variant="outline" size="icon" onClick={() => setSuggestionsPanelOpen(p => !p)}>
-                          <PanelRight />
-                      </Button>
-                  )}
               </div>
           </header>
           <div className="flex-grow flex relative">
@@ -745,12 +679,6 @@ function SessionWeaverFlow() {
                       <Controls />
                   </ReactFlow>
               </div>
-              <AiSuggestionsPanel 
-                  isOpen={isSuggestionsPanelOpen}
-                  onClose={() => setSuggestionsPanelOpen(false)}
-                  suggestions={suggestions}
-                  onAddEdge={addSuggestedEdge}
-              />
               <GameSeedModal
                   isOpen={isGameSeedModalOpen}
                   onClose={() => setGameSeedModalOpen(false)}

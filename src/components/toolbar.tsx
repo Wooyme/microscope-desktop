@@ -1,4 +1,4 @@
-import { BrainCircuit, CalendarPlus, Milestone, Crown, FileDown, FileUp, Camera, Settings, Users } from 'lucide-react';
+import { CalendarPlus, Milestone, Crown, FileDown, FileUp, Camera, Settings, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
@@ -8,7 +8,6 @@ import React from 'react';
 
 type ToolbarProps = {
   addNode: (type: 'period' | 'event' | 'scene') => void;
-  getSuggestions: () => void;
   isGenerating: boolean;
   isGodMode: boolean;
   setGodMode: (value: boolean) => void;
@@ -19,7 +18,7 @@ type ToolbarProps = {
   canCreateNode: boolean;
 };
 
-export default function Toolbar({ addNode, getSuggestions, isGenerating, isGodMode, setGodMode, exportHistory, importHistory, onGameSeedClick, onMultiplayerClick, canCreateNode }: ToolbarProps) {
+export default function Toolbar({ addNode, isGenerating, isGodMode, setGodMode, exportHistory, importHistory, onGameSeedClick, onMultiplayerClick, canCreateNode }: ToolbarProps) {
   const importInputRef = React.useRef<HTMLInputElement>(null);
 
   return (
@@ -53,17 +52,6 @@ export default function Toolbar({ addNode, getSuggestions, isGenerating, isGodMo
           </TooltipTrigger>
           <TooltipContent>
             <p>Add Scene</p>
-          </TooltipContent>
-        </Tooltip>
-        <Separator orientation="vertical" className="h-6" />
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={getSuggestions} disabled={isGenerating}>
-              <BrainCircuit className={isGenerating ? 'animate-pulse' : ''} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{isGenerating ? 'Weaving...' : 'Suggest Legacies'}</p>
           </TooltipContent>
         </Tooltip>
         <Separator orientation="vertical" className="h-6" />
