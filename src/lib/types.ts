@@ -38,6 +38,13 @@ export type Player = {
   name: string;
 };
 
+export type LogEntry = {
+    playerId: string;
+    playerName: string;
+    summary: string;
+    timestamp: string;
+}
+
 // Types for the hierarchical narrative context
 export interface NarrativeScene {
   id: string;
@@ -69,4 +76,5 @@ export interface Narrative {
   gameSeed: GameSeed;
   focus: string;
   periods: NarrativePeriod[];
+  historyLog: LogEntry[];
 }

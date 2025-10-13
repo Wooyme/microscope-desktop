@@ -28,7 +28,7 @@ import AiSuggestionsPanel from '@/components/ai-suggestions-panel';
 import { Button } from './ui/button';
 import { suggestNewLegacies, SuggestNewLegaciesOutput } from '@/ai/flows/suggest-new-legacies';
 import { useToast } from '@/hooks/use-toast';
-import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene, GameSeed, Player } from '@/lib/types';
+import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene, GameSeed, Player, LogEntry } from '@/lib/types';
 import { PanelRight } from 'lucide-react';
 import SettingsPanel from './settings-panel';
 import GameSeedModal from './game-seed-modal';
@@ -72,9 +72,11 @@ function SessionWeaverFlow() {
   const [activePlayerIndex, setActivePlayerIndex] = useState(0);
   const [nodesCreatedThisTurn, setNodesCreatedThisTurn] = useState(0);
   const [firstNodeThisTurnId, setFirstNodeThisTurnId] = useState<string | null>(null);
+  const [nodesAtTurnStart, setNodesAtTurnStart] = useState<Node[]>(initialNodes);
+  const [historyLog, setHistoryLog] = useState<LogEntry[]>([]);
 
   const activePlayer = players[activePlayerIndex];
-  const nextPlayer = players[(activePlayerIndex + 1) % players.length];
+  const nextPlayer = players.length > 1 ? players[(activePlayerIndex + 1) % players.length] : undefined;
   const isHost = activePlayerIndex === 0;
   const maxNodesPerTurn = isHost ? 2 : 1;
   const canCreateNode = nodesCreatedThisTurn < maxNodesPerTurn;
@@ -86,13 +88,45 @@ function SessionWeaverFlow() {
   const { toast } = useToast();
 
   const handleEndTurn = () => {
-    setActivePlayerIndex((prevIndex) => (prevIndex + 1) % players.length);
+    // Log changes
+    const newNodes = nodes.filter(n => !nodesAtTurnStart.some(n_start => n_start.id === n.id));
+    if (newNodes.length > 0) {
+        const summary = newNodes.map(n => `a ${n.type} named '${n.data.name}'`).join(' and ');
+        const logSummary = `${activePlayer.name} added ${summary}.`;
+        
+        const newLogEntry: LogEntry = {
+            playerId: activePlayer.id,
+            playerName: activePlayer.name,
+            summary: logSummary,
+            timestamp: new Date().toISOString(),
+        };
+
+        setHistoryLog(prev => [...prev, newLogEntry]);
+
+        toast({
+            title: "Player Action Logged",
+            description: logSummary,
+        });
+    }
+
+
+    const nextPlayerIndex = players.length > 1 ? (activePlayerIndex + 1) % players.length : 0;
+    setActivePlayerIndex(nextPlayerIndex);
     setNodesCreatedThisTurn(0);
     setFirstNodeThisTurnId(null);
-    toast({
-        title: "Turn Ended",
-        description: `It's now ${nextPlayer.name}'s turn.`,
-    })
+    setNodesAtTurnStart(nodes); // Snapshot nodes for the next turn
+
+    if (nextPlayer) {
+        toast({
+            title: "Turn Ended",
+            description: `It's now ${nextPlayer.name}'s turn.`,
+        });
+    } else {
+         toast({
+            title: "Turn Ended",
+            description: "No other players. It's your turn again.",
+        })
+    }
   };
 
   useEffect(() => {
@@ -140,12 +174,13 @@ function SessionWeaverFlow() {
       setNarrative({ 
         gameSeed,
         focus,
-        periods: narrativePeriods 
+        periods: narrativePeriods,
+        historyLog
       });
     };
 
     buildNarrative();
-  }, [nodes, edges, gameSeed, focus]);
+  }, [nodes, edges, gameSeed, focus, historyLog]);
 
   useEffect(() => {
     if (narrative) {
@@ -465,6 +500,7 @@ function SessionWeaverFlow() {
         nodeIdCounter = maxId + 1;
         setNodes(newNodes);
         setEdges(newEdges);
+        setNodesAtTurnStart(newNodes);
         toast({ title: 'Success', description: 'History imported successfully.' });
       } catch (error) {
         console.error('Error importing history:', error);
