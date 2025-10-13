@@ -70,14 +70,19 @@ function SessionWeaverFlow() {
   ]);
   const [isMultiplayerModalOpen, setMultiplayerModalOpen] = useState(false);
   const [activePlayerIndex, setActivePlayerIndex] = useState(0);
+  const [nodesCreatedThisTurn, setNodesCreatedThisTurn] = useState(0);
 
   const activePlayer = players[activePlayerIndex];
   const nextPlayer = players[(activePlayerIndex + 1) % players.length];
+  const isHost = activePlayerIndex === 0;
+  const maxNodesPerTurn = isHost ? 2 : 1;
+  const canCreateNode = nodesCreatedThisTurn < maxNodesPerTurn;
 
   const { toast } = useToast();
 
   const handleEndTurn = () => {
     setActivePlayerIndex((prevIndex) => (prevIndex + 1) % players.length);
+    setNodesCreatedThisTurn(0);
     toast({
         title: "Turn Ended",
         description: `It's now ${nextPlayer.name}'s turn.`,
@@ -152,6 +157,7 @@ function SessionWeaverFlow() {
   }, []);
 
   const addNode = (type: 'period' | 'event' | 'scene') => {
+    if (!canCreateNode) return;
     const newNode: Node = {
       id: getUniqueNodeId(type),
       type,
@@ -159,9 +165,11 @@ function SessionWeaverFlow() {
       data: { name: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`, description: '' },
     };
     setNodes((nds) => nds.concat(newNode));
+    setNodesCreatedThisTurn(c => c + 1);
   };
   
   const addPeriod = (direction: 'left' | 'right', sourceNodeId: string) => {
+    if (!canCreateNode) return;
     const sourceNode = nodes.find(n => n.id === sourceNodeId);
     if (!sourceNode) return;
   
@@ -186,9 +194,11 @@ function SessionWeaverFlow() {
   
     setNodes(nds => nds.concat(newNode));
     setEdges(eds => addEdge(newEdge, eds));
+    setNodesCreatedThisTurn(c => c + 1);
   };
 
   const addEvent = (sourceNodeId: string) => {
+    if (!canCreateNode) return;
     const sourceNode = nodes.find(n => n.id === sourceNodeId);
     if (!sourceNode || sourceNode.type !== 'period') return;
   
@@ -212,9 +222,11 @@ function SessionWeaverFlow() {
   
     setNodes(nds => nds.concat(newNode));
     setEdges(eds => addEdge(newEdge, eds));
+    setNodesCreatedThisTurn(c => c + 1);
   };
 
   const addScene = (sourceNodeId: string) => {
+    if (!canCreateNode) return;
     const sourceNode = nodes.find(n => n.id === sourceNodeId);
     if (!sourceNode || sourceNode.type !== 'event') return;
 
@@ -238,6 +250,7 @@ function SessionWeaverFlow() {
 
     setNodes(nds => nds.concat(newNode));
     setEdges(eds => addEdge(newEdge, eds));
+    setNodesCreatedThisTurn(c => c + 1);
   };
   
   const deleteNode = (nodeId: string) => {
@@ -460,12 +473,25 @@ function SessionWeaverFlow() {
             isConnectedLeft,
             isConnectedRight,
             disconnectPeer,
+            canCreateNode,
           }
         };
       }
-      return {...n, data: {...n.data, updateNodeData, addPeriod, deleteNode, addEvent, addScene }};
+       if (n.type === 'event') {
+        return {
+          ...n,
+          data: {
+            ...n.data,
+            updateNodeData,
+            deleteNode,
+            addScene,
+            canCreateNode,
+          }
+        };
+      }
+      return {...n, data: {...n.data, updateNodeData, deleteNode }};
     });
-  }, [nodes, edges, updateNodeData, addPeriod, deleteNode, addEvent, addScene, disconnectPeer]);
+  }, [nodes, edges, updateNodeData, addPeriod, deleteNode, addEvent, addScene, disconnectPeer, canCreateNode]);
 
   return (
     <NarrativeContext.Provider value={{ narrative }}>
@@ -483,6 +509,7 @@ function SessionWeaverFlow() {
                       exportHistory={exportHistory}
                       onGameSeedClick={() => setGameSeedModalOpen(true)}
                       onMultiplayerClick={() => setMultiplayerModalOpen(true)}
+                      canCreateNode={canCreateNode}
                   />
                   {suggestions.length > 0 && !isSuggestionsPanelOpen && (
                       <Button variant="outline" size="icon" onClick={() => setSuggestionsPanelOpen(p => !p)}>
@@ -517,6 +544,8 @@ function SessionWeaverFlow() {
                       <TurnPanel
                         onEndTurn={handleEndTurn}
                         nextPlayer={nextPlayer}
+                        nodesCreatedThisTurn={nodesCreatedThisTurn}
+                        maxNodesPerTurn={maxNodesPerTurn}
                       />
                       <Background />
                       <Controls />

@@ -16,9 +16,10 @@ type ToolbarProps = {
   importHistory: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onGameSeedClick: () => void;
   onMultiplayerClick: () => void;
+  canCreateNode: boolean;
 };
 
-export default function Toolbar({ addNode, getSuggestions, isGenerating, isReviewMode, setReviewMode, exportHistory, importHistory, onGameSeedClick, onMultiplayerClick }: ToolbarProps) {
+export default function Toolbar({ addNode, getSuggestions, isGenerating, isReviewMode, setReviewMode, exportHistory, importHistory, onGameSeedClick, onMultiplayerClick, canCreateNode }: ToolbarProps) {
   const importInputRef = React.useRef<HTMLInputElement>(null);
 
   return (
@@ -26,7 +27,7 @@ export default function Toolbar({ addNode, getSuggestions, isGenerating, isRevie
       <div className="flex items-center gap-2 p-1 rounded-lg border bg-card">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={() => addNode('period')}>
+            <Button variant="ghost" size="icon" onClick={() => addNode('period')} disabled={!canCreateNode}>
               <CalendarPlus />
             </Button>
           </TooltipTrigger>
@@ -36,7 +37,7 @@ export default function Toolbar({ addNode, getSuggestions, isGenerating, isRevie
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={() => addNode('event')}>
+            <Button variant="ghost" size="icon" onClick={() => addNode('event')} disabled={!canCreateNode}>
               <Milestone />
             </Button>
           </TooltipTrigger>
@@ -46,7 +47,7 @@ export default function Toolbar({ addNode, getSuggestions, isGenerating, isRevie
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={() => addNode('scene')}>
+            <Button variant="ghost" size="icon" onClick={() => addNode('scene')} disabled={!canCreateNode}>
               <Camera />
             </Button>
           </TooltipTrigger>

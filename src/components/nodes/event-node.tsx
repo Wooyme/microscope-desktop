@@ -12,10 +12,11 @@ type EventNodeData = {
   updateNodeData: (id: string, data: any) => void;
   deleteNode: (nodeId: string) => void;
   addScene: (sourceNodeId: string) => void;
+  canCreateNode: boolean;
 };
 
 function EventNode({ id, data }: NodeProps<EventNodeData>) {
-  const { name, description, updateNodeData, deleteNode, addScene } = data;
+  const { name, description, updateNodeData, deleteNode, addScene, canCreateNode } = data;
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if(updateNodeData) updateNodeData(id, { name: e.target.value });
@@ -29,7 +30,7 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
     <Card className="w-64 shadow-lg border-2 border-accent/50 group relative">
        <NodeToolbar
         onDelete={() => deleteNode(id)}
-        onAddChild={() => addScene(id)}
+        onAddChild={canCreateNode ? () => addScene(id) : undefined}
       />
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-accent/10">
         <CardTitle className="text-lg font-headline flex items-center gap-2">

@@ -15,11 +15,16 @@ import {
 type TurnPanelProps = {
   onEndTurn: () => void;
   nextPlayer: Player | undefined;
+  nodesCreatedThisTurn: number;
+  maxNodesPerTurn: number;
 };
 
-export default function TurnPanel({ onEndTurn, nextPlayer }: TurnPanelProps) {
+export default function TurnPanel({ onEndTurn, nextPlayer, nodesCreatedThisTurn, maxNodesPerTurn }: TurnPanelProps) {
   return (
     <div className="absolute bottom-4 right-4 z-10 p-2 bg-card/80 rounded-lg shadow-lg border border-border flex items-center gap-4">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Nodes Created: {nodesCreatedThisTurn}/{maxNodesPerTurn}</span>
+        </div>
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
