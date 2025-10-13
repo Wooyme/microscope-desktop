@@ -36,7 +36,7 @@ export type History = {
     legacies: Legacy[];
 };
 
-export type AiStrategy = 'Balanced' | 'Builder' | 'Detailer';
+export type AiStrategy = 'Balanced' | 'Builder' | 'Detailer' | 'Focuser';
 
 export type Player = {
   id: string;
@@ -63,7 +63,7 @@ export interface NarrativeScene {
 }
 
 export interface NarrativeEvent {
-  id: string;
+  id:string;
   name: string;
   description: string;
   imageUrl?: string;

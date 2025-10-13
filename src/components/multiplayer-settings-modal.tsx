@@ -32,7 +32,7 @@ let playerIdCounter = 3;
 const getUniquePlayerId = () => `player-${playerIdCounter++}`;
 
 const aiPersonalities = ["Creative", "Logical", "Chaotic", "Historian", "Pragmatist"];
-const aiStrategies: AiStrategy[] = ["Balanced", "Builder", "Detailer"];
+const aiStrategies: AiStrategy[] = ["Balanced", "Builder", "Detailer", "Focuser"];
 
 export default function MultiplayerSettingsModal({ isOpen, onClose, players, setPlayers }: MultiplayerSettingsModalProps) {
   const [newPlayerName, setNewPlayerName] = useState('');

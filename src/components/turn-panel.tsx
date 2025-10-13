@@ -2,7 +2,6 @@
 
 import { Button } from './ui/button';
 import { ArrowRight } from 'lucide-react';
-import type { Player } from '@/lib/types';
 import {
     Tooltip,
     TooltipContent,
@@ -12,14 +11,13 @@ import {
 
 type TurnPanelProps = {
   onEndTurn: () => void;
-  nextPlayer: Player | undefined;
   nodesCreatedThisTurn: number;
   maxNodesPerTurn: number;
   isAiTurn: boolean;
   isPlayerTurn: boolean;
 };
 
-export default function TurnPanel({ onEndTurn, nextPlayer, nodesCreatedThisTurn, maxNodesPerTurn, isAiTurn, isPlayerTurn }: TurnPanelProps) {
+export default function TurnPanel({ onEndTurn, nodesCreatedThisTurn, maxNodesPerTurn, isAiTurn, isPlayerTurn }: TurnPanelProps) {
   return (
     <div className="absolute bottom-4 right-4 z-10 p-2 bg-card/80 rounded-lg shadow-lg border border-border flex items-center gap-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">

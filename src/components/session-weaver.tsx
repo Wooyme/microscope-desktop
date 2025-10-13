@@ -155,6 +155,8 @@ function SessionWeaverFlow() {
       }
     }
 
+    const currentNarrative = buildNarrative();
+
     // Log changes
     const newNodes = nodes.filter(n => !nodesAtTurnStart.some(n_start => n_start.id === n.id));
     if (newNodes.length > 0) {
@@ -183,8 +185,6 @@ function SessionWeaverFlow() {
             description: logSummary,
         });
     }
-
-    buildNarrative();
 
     const nextPlayerIndex = players.length > 1 ? (activePlayerIndex + 1) % players.length : 0;
     setActivePlayerIndex(nextPlayerIndex);
@@ -219,7 +219,7 @@ function SessionWeaverFlow() {
     setIsAiTurn(true);
   
     try {
-      const move = determineAiMove(nodes, edges, activePlayer.strategy);
+      const move = determineAiMove(nodes, edges, historyLog, activePlayer.strategy);
       if (!move) {
         throw new Error("AI could not determine a valid move.");
       }
@@ -285,7 +285,7 @@ function SessionWeaverFlow() {
         setTimeout(() => setIsAiTurn(false), 1000);
       }
     }
-  }, [activePlayer, isAiTurn, buildNarrative, nodes, edges, handleEndTurn, toast]);
+  }, [activePlayer, isAiTurn, buildNarrative, nodes, edges, historyLog, handleEndTurn, toast]);
 
   useEffect(() => {
     if (activePlayer?.isAI) {
@@ -652,7 +652,6 @@ function SessionWeaverFlow() {
                       />
                       <TurnPanel
                         onEndTurn={handleEndTurn}
-                        nextPlayer={nextPlayer}
                         nodesCreatedThisTurn={nodesCreatedThisTurn}
                         maxNodesPerTurn={maxNodesPerTurn}
                         isAiTurn={isAiTurn}

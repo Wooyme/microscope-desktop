@@ -1,5 +1,6 @@
+'use client';
 import { Node, Edge } from '@xyflow/react';
-import type { AiStrategy } from './types';
+import type { AiStrategy, LogEntry } from './types';
 
 type AiMove = {
   type: 'period' | 'event' | 'scene';
@@ -48,7 +49,7 @@ const builderStrategy = (nodes: Node[], edges: Edge[]): AiMove | null => {
 
   const randomChoice = Math.random();
   // 50% chance to add a new Period as a peer to an existing one
-  if (randomChoice < 0.5) {
+  if (randomChoice < 0.5 && periods.length > 0) {
       const parentNode = periods[Math.floor(Math.random() * periods.length)];
       return { type: 'period', parentId: parentNode.id };
   } 
@@ -80,12 +81,51 @@ const detailerStrategy = (nodes: Node[], edges: Edge[]): AiMove | null => {
     }
 };
 
-export const determineAiMove = (nodes: Node[], edges: Edge[], strategy?: AiStrategy): AiMove | null => {
+// Strategy 4: Focuser - builds on the last created node
+const focuserStrategy = (nodes: Node[], edges: Edge[], historyLog: LogEntry[]): AiMove | null => {
+    if (historyLog.length === 0) return balancedStrategy(nodes, edges);
+
+    const lastLogEntry = historyLog[historyLog.length - 1];
+    if (!lastLogEntry.addedNodeIds || lastLogEntry.addedNodeIds.length === 0) {
+        return balancedStrategy(nodes, edges);
+    }
+
+    const lastNodeId = lastLogEntry.addedNodeIds[lastLogEntry.addedNodeIds.length - 1];
+    const lastNode = nodes.find(n => n.id === lastNodeId);
+
+    if (!lastNode) return balancedStrategy(nodes, edges);
+
+    switch (lastNode.type) {
+        case 'period':
+            return { type: 'event', parentId: lastNode.id };
+        case 'event':
+            return { type: 'scene', parentId: lastNode.id };
+        case 'scene':
+            // Find the parent event of the last scene and add another scene to it
+            const parentEdge = edges.find(e => e.target === lastNode.id);
+            if (parentEdge && parentEdge.source) {
+                return { type: 'scene', parentId: parentEdge.source };
+            }
+            break; // fallback if no parent found
+    }
+
+    // Fallback to balanced if the logic above fails
+    return balancedStrategy(nodes, edges);
+};
+
+export const determineAiMove = (
+    nodes: Node[],
+    edges: Edge[],
+    historyLog: LogEntry[],
+    strategy?: AiStrategy
+  ): AiMove | null => {
   switch (strategy) {
     case 'Builder':
       return builderStrategy(nodes, edges);
     case 'Detailer':
       return detailerStrategy(nodes, edges);
+    case 'Focuser':
+      return focuserStrategy(nodes, edges, historyLog);
     case 'Balanced':
     default:
       return balancedStrategy(nodes, edges);
