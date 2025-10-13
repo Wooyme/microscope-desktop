@@ -85,7 +85,7 @@ export default function CharacterEditor({ content, onUpdate, imageUrl, onImageUp
                 {imageUrl ? (
                     <Image src={imageUrl} alt="Banner image" width={550} height={310} className="object-cover w-full h-full" />
                 ) : (
-                    <span className="text-muted-foreground">No image uploaded</span>
+                   null
                 )}
                 </div>
             </div>

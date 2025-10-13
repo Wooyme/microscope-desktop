@@ -10,6 +10,7 @@ import CharacterEditor from '../character-editor';
 import { cn } from '@/lib/utils';
 import { Textarea } from '../ui/textarea';
 import Image from 'next/image';
+import { ScrollArea } from '../ui/scroll-area';
 
 type PeriodNodeData = {
   name: string;
@@ -100,19 +101,21 @@ function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
         <Handle type="target" position={Position.Left} id="peer-target" className="w-3 h-3 !bg-accent" />
         <Handle type="source" position={Position.Bottom} id="child-source" className="w-3 h-3 !bg-primary" />
       </Card>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Edit Period: {name}</DialogTitle>
         </DialogHeader>
-        <div className="py-4">
-          <CharacterEditor
-            content={description}
-            onUpdate={onDescriptionChange}
-            imageUrl={imageUrl}
-            onImageUpdate={onImageChange}
-          />
-        </div>
-        <DialogFooter>
+        <ScrollArea className="pr-4">
+          <div className="py-4">
+            <CharacterEditor
+              content={description}
+              onUpdate={onDescriptionChange}
+              imageUrl={imageUrl}
+              onImageUpdate={onImageChange}
+            />
+          </div>
+        </ScrollArea>
+        <DialogFooter className='mt-auto'>
           <Button onClick={() => setIsModalOpen(false)}>Done</Button>
         </DialogFooter>
       </DialogContent>
