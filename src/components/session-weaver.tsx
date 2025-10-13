@@ -53,7 +53,7 @@ export const useNarrative = () => useContext(NarrativeContext);
 function SessionWeaverFlow() {
   const [nodes, setNodes] = useState<Node<any>[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
-  const [isReviewMode, setReviewMode] = useState(false);
+  const [isGodMode, setGodMode] = useState(false);
   const [isSuggestionsPanelOpen, setSuggestionsPanelOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<SuggestNewLegaciesOutput>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -80,11 +80,14 @@ function SessionWeaverFlow() {
   const activePlayer = players[activePlayerIndex];
   const nextPlayer = players.length > 1 ? players[(activePlayerIndex + 1) % players.length] : undefined;
   const isHost = activePlayerIndex === 0;
-  const maxNodesPerTurn = isHost ? 2 : 1;
+
+  const inGodMode = isHost && isGodMode;
+  
+  const maxNodesPerTurn = inGodMode ? Infinity : (isHost ? 2 : 1);
   const canCreateNode = nodesCreatedThisTurn < maxNodesPerTurn;
   
   // Specific logic for host's second move
-  const canHostCreateGlobalNode = isHost ? nodesCreatedThisTurn === 0 : canCreateNode;
+  const canHostCreateGlobalNode = inGodMode || (isHost ? nodesCreatedThisTurn === 0 : canCreateNode);
 
 
   const { toast } = useToast();
@@ -332,7 +335,7 @@ function SessionWeaverFlow() {
   const addNode = (type: 'period' | 'event' | 'scene') => {
     if (!canCreateNode) return;
     if (activePlayer?.isAI) return;
-    if (isHost && nodesCreatedThisTurn > 0) return;
+    if (isHost && !inGodMode && nodesCreatedThisTurn > 0) return;
     const newNodeId = getUniqueNodeId(type);
     const newNode: Node = {
       id: newNodeId,
@@ -347,7 +350,7 @@ function SessionWeaverFlow() {
   const addPeriod = (direction: 'left' | 'right', sourceNodeId: string) => {
     if (!canCreateNode) return;
     if (activePlayer?.isAI) return;
-    if (isHost && nodesCreatedThisTurn > 0) return;
+    if (isHost && !inGodMode && nodesCreatedThisTurn > 0) return;
     const sourceNode = nodes.find(n => n.id === sourceNodeId);
     if (!sourceNode) return;
   
@@ -378,7 +381,7 @@ function SessionWeaverFlow() {
   const addEvent = (sourceNodeId: string) => {
     if (!canCreateNode) return;
     if (activePlayer?.isAI) return;
-    if (isHost && nodesCreatedThisTurn > 0 && sourceNodeId !== firstNodeThisTurnId) return;
+    if (isHost && !inGodMode && nodesCreatedThisTurn > 0 && sourceNodeId !== firstNodeThisTurnId) return;
 
     const sourceNode = nodes.find(n => n.id === sourceNodeId);
     if (!sourceNode || sourceNode.type !== 'period') return;
@@ -409,7 +412,7 @@ function SessionWeaverFlow() {
   const addScene = (sourceNodeId: string) => {
     if (!canCreateNode) return;
     if (activePlayer?.isAI) return;
-    if (isHost && nodesCreatedThisTurn > 0 && sourceNodeId !== firstNodeThisTurnId) return;
+    if (isHost && !inGodMode && nodesCreatedThisTurn > 0 && sourceNodeId !== firstNodeThisTurnId) return;
 
     const sourceNode = nodes.find(n => n.id === sourceNodeId);
     if (!sourceNode || sourceNode.type !== 'event') return;
@@ -646,7 +649,7 @@ function SessionWeaverFlow() {
     const isPlayerTurn = !activePlayer?.isAI;
 
     return nodes.map(n => {
-      const isNodeCreatable = isPlayerTurn && canCreateNode && (!isHost || nodesCreatedThisTurn === 0 || (nodesCreatedThisTurn === 1 && firstNodeThisTurnId === n.id));
+      const isNodeCreatable = isPlayerTurn && (inGodMode || (canCreateNode && (!isHost || nodesCreatedThisTurn === 0 || (nodesCreatedThisTurn === 1 && firstNodeThisTurnId === n.id))));
 
       if (n.type === 'period') {
         const isConnectedRight = peerEdges.some(e => e.source === n.id);
@@ -662,7 +665,7 @@ function SessionWeaverFlow() {
             isConnectedLeft,
             isConnectedRight,
             disconnectPeer,
-            canCreateNode: isPlayerTurn && canHostCreateGlobalNode,
+            canCreateNode: isPlayerTurn && (inGodMode || canHostCreateGlobalNode),
             canAddChild: isNodeCreatable,
           }
         };
@@ -681,7 +684,7 @@ function SessionWeaverFlow() {
       }
       return {...n, data: {...n.data, updateNodeData, deleteNode }};
     });
-  }, [nodes, edges, updateNodeData, addPeriod, deleteNode, addEvent, addScene, disconnectPeer, canCreateNode, canHostCreateGlobalNode, nodesCreatedThisTurn, firstNodeThisTurnId, isHost, activePlayer]);
+  }, [nodes, edges, updateNodeData, addPeriod, deleteNode, addEvent, addScene, disconnectPeer, canCreateNode, canHostCreateGlobalNode, nodesCreatedThisTurn, firstNodeThisTurnId, isHost, activePlayer, inGodMode]);
 
   return (
     <NarrativeContext.Provider value={{ narrative }}>
@@ -693,13 +696,13 @@ function SessionWeaverFlow() {
                       addNode={addNode}
                       getSuggestions={handleGetSuggestions}
                       isGenerating={isGenerating || isAiTurn}
-                      isReviewMode={isReviewMode}
-                      setReviewMode={setReviewMode}
+                      isGodMode={isGodMode}
+                      setGodMode={setGodMode}
                       importHistory={importHistory}
                       exportHistory={exportHistory}
                       onGameSeedClick={() => setGameSeedModalOpen(true)}
                       onMultiplayerClick={() => setMultiplayerModalOpen(true)}
-                      canCreateNode={canHostCreateGlobalNode && !activePlayer?.isAI}
+                      canCreateNode={(inGodMode || canHostCreateGlobalNode) && !activePlayer?.isAI}
                   />
                   {suggestions.length > 0 && !isSuggestionsPanelOpen && (
                       <Button variant="outline" size="icon" onClick={() => setSuggestionsPanelOpen(p => !p)}>
@@ -718,11 +721,10 @@ function SessionWeaverFlow() {
                       onConnect={onConnect}
                       nodeTypes={nodeTypes}
                       defaultEdgeOptions={defaultEdgeOptions}
-                      nodesDraggable={!isReviewMode && !activePlayer?.isAI}
-                      nodesConnectable={!isReviewMode && !activePlayer?.isAI}
-                      elementsSelectable={!isReviewMode && !activePlayer?.isAI}
+                      nodesDraggable={!activePlayer?.isAI}
+                      nodesConnectable={!activePlayer?.isAI}
+                      elementsSelectable={!activePlayer?.isAI}
                       fitView
-                      className={isReviewMode ? 'review-mode' : ''}
                   >
                       <SettingsPanel 
                         bigPicture={gameSeed.bigPicture}
@@ -774,3 +776,5 @@ export default function SessionWeaver() {
         </ReactFlowProvider>
     )
 }
+
+    

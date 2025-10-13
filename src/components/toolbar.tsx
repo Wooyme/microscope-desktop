@@ -1,4 +1,4 @@
-import { BrainCircuit, CalendarPlus, Milestone, Eye, EyeOff, FileDown, FileUp, Camera, Settings, Users } from 'lucide-react';
+import { BrainCircuit, CalendarPlus, Milestone, Crown, FileDown, FileUp, Camera, Settings, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
@@ -10,8 +10,8 @@ type ToolbarProps = {
   addNode: (type: 'period' | 'event' | 'scene') => void;
   getSuggestions: () => void;
   isGenerating: boolean;
-  isReviewMode: boolean;
-  setReviewMode: (value: boolean) => void;
+  isGodMode: boolean;
+  setGodMode: (value: boolean) => void;
   exportHistory: () => void;
   importHistory: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onGameSeedClick: () => void;
@@ -19,7 +19,7 @@ type ToolbarProps = {
   canCreateNode: boolean;
 };
 
-export default function Toolbar({ addNode, getSuggestions, isGenerating, isReviewMode, setReviewMode, exportHistory, importHistory, onGameSeedClick, onMultiplayerClick, canCreateNode }: ToolbarProps) {
+export default function Toolbar({ addNode, getSuggestions, isGenerating, isGodMode, setGodMode, exportHistory, importHistory, onGameSeedClick, onMultiplayerClick, canCreateNode }: ToolbarProps) {
   const importInputRef = React.useRef<HTMLInputElement>(null);
 
   return (
@@ -118,14 +118,14 @@ export default function Toolbar({ addNode, getSuggestions, isGenerating, isRevie
         <Separator orientation="vertical" className="h-6" />
         <div className="flex items-center space-x-2 px-2">
           <Switch
-            id="review-mode"
-            checked={isReviewMode}
-            onCheckedChange={setReviewMode}
-            aria-label="Review Mode"
+            id="god-mode"
+            checked={isGodMode}
+            onCheckedChange={setGodMode}
+            aria-label="God Mode"
           />
-          <Label htmlFor="review-mode" className="flex items-center gap-2 cursor-pointer">
-            {isReviewMode ? <EyeOff size={16} /> : <Eye size={16} />}
-            <span className="text-sm">Review</span>
+          <Label htmlFor="god-mode" className="flex items-center gap-2 cursor-pointer">
+            <Crown size={16} className={isGodMode ? 'text-amber-400' : ''} />
+            <span className="text-sm">God Mode</span>
           </Label>
         </div>
       </div>
