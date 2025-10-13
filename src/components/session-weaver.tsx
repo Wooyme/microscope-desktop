@@ -33,6 +33,7 @@ import { PanelRight } from 'lucide-react';
 import SettingsPanel from './settings-panel';
 import GameSeedModal from './game-seed-modal';
 import MultiplayerSettingsModal from './multiplayer-settings-modal';
+import TurnPanel from './turn-panel';
 
 const initialNodes: Node[] = [
   { id: 'period-1', type: 'period', position: { x: 100, y: 100 }, data: { name: 'The Ancient Era', description: 'A time of myth and legends.' } },
@@ -68,9 +69,20 @@ function SessionWeaverFlow() {
     { id: 'player-2', name: 'Sam' },
   ]);
   const [isMultiplayerModalOpen, setMultiplayerModalOpen] = useState(false);
+  const [activePlayerIndex, setActivePlayerIndex] = useState(0);
 
+  const activePlayer = players[activePlayerIndex];
+  const nextPlayer = players[(activePlayerIndex + 1) % players.length];
 
   const { toast } = useToast();
+
+  const handleEndTurn = () => {
+    setActivePlayerIndex((prevIndex) => (prevIndex + 1) % players.length);
+    toast({
+        title: "Turn Ended",
+        description: `It's now ${nextPlayer.name}'s turn.`,
+    })
+  };
 
   useEffect(() => {
     const buildNarrative = () => {
@@ -500,6 +512,11 @@ function SessionWeaverFlow() {
                         focus={focus}
                         setFocus={setFocus}
                         onBigPictureClick={() => setGameSeedModalOpen(true)}
+                        activePlayer={activePlayer}
+                      />
+                      <TurnPanel
+                        onEndTurn={handleEndTurn}
+                        nextPlayer={nextPlayer}
                       />
                       <Background />
                       <Controls />
