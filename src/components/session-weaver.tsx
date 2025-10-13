@@ -27,7 +27,7 @@ import Toolbar from '@/components/toolbar';
 import AiSuggestionsPanel from '@/components/ai-suggestions-panel';
 import { Button } from './ui/button';
 import { suggestNewLegacies, SuggestNewLegaciesOutput } from '@/ai/flows/suggest-new-legacies';
-import { suggestNextMove } from '@/ai/flows/suggest-next-move';
+import { generateNodeContent } from '@/ai/flows/suggest-next-move';
 import { useToast } from '@/hooks/use-toast';
 import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene, GameSeed, Player, LogEntry } from '@/lib/types';
 import { PanelRight } from 'lucide-react';
@@ -68,7 +68,7 @@ function SessionWeaverFlow() {
   });
   const [players, setPlayers] = useState<Player[]>([
     { id: 'player-1', name: 'Alex' },
-    { id: 'player-2', name: 'Sam' },
+    { id: 'player-2', name: 'AI Creative', isAI: true, personality: 'Creative' },
   ]);
   const [isMultiplayerModalOpen, setMultiplayerModalOpen] = useState(false);
   const [activePlayerIndex, setActivePlayerIndex] = useState(0);
@@ -193,99 +193,115 @@ function SessionWeaverFlow() {
 
   const handleAiTurn = useCallback(async () => {
     if (!narrative || !activePlayer?.isAI || isAiTurn) return;
-
+  
     setIsAiTurn(true);
+  
+    // 1. Determine the strategic move programmatically
+    const determineAiMove = () => {
+      const periods = nodes.filter(n => n.type === 'period');
+      const events = nodes.filter(n => n.type === 'event');
+      const scenes = nodes.filter(n => n.type === 'scene');
+  
+      // If timeline is empty, create a root period
+      if (nodes.length === 0) {
+        return { type: 'period', parentId: null };
+      }
+  
+      // Strategy: Prioritize filling out the hierarchy
+      // Find periods with no events
+      const periodsWithoutEvents = periods.filter(p => !edges.some(e => e.source === p.id && events.some(ev => ev.id === e.target)));
+      if (periodsWithoutEvents.length > 0) {
+        const parentNode = periodsWithoutEvents[Math.floor(Math.random() * periodsWithoutEvents.length)];
+        return { type: 'event', parentId: parentNode.id };
+      }
+  
+      // Find events with no scenes
+      const eventsWithoutScenes = events.filter(ev => !edges.some(e => e.source === ev.id && scenes.some(s => s.id === e.target)));
+      if (eventsWithoutScenes.length > 0) {
+        const parentNode = eventsWithoutScenes[Math.floor(Math.random() * eventsWithoutScenes.length)];
+        return { type: 'scene', parentId: parentNode.id };
+      }
+  
+      // Fallback strategy: Add a new period or scene randomly
+      const randomChoice = Math.random();
+      if (randomChoice < 0.3 && periods.length > 0) { // Add new peer period
+        const parentNode = periods[Math.floor(Math.random() * periods.length)];
+        return { type: 'period', parentId: parentNode.id };
+      } else if (randomChoice < 0.7 && events.length > 0) { // Add a new scene
+        const parentNode = events[Math.floor(Math.random() * events.length)];
+        return { type: 'scene', parentId: parentNode.id };
+      } else if (periods.length > 0) { // Add a new event
+        const parentNode = periods[Math.floor(Math.random() * periods.length)];
+        return { type: 'event', parentId: parentNode.id };
+      } else { // Default to creating a root period if logic fails
+        return { type: 'period', parentId: null };
+      }
+    };
+  
     try {
-        const move = await suggestNextMove({ narrative, player: activePlayer });
-
-        if (move.node) {
-            const { type, name, description, parentId } = move.node;
-            
-            let newNode: Node | null = null;
-            let newEdge: Edge | null = null;
-            const newNodeId = getUniqueNodeId(type);
-
-            // Handle root period creation
-            if (type === 'period' && !parentId) {
-                newNode = {
-                    id: newNodeId, type: 'period',
-                    position: { x: 100, y: 100 }, // Initial position for the first node
-                    data: { name, description }
-                };
-            } else {
-                const parentNode = nodes.find(n => n.id === parentId);
-                if (!parentNode) {
-                    throw new Error(`AI tried to add a child to a non-existent parent: ${parentId}`);
-                }
-
-                if (type === 'event' && parentNode.type === 'period') {
-                    newNode = {
-                        id: newNodeId, type: 'event',
-                        position: { x: parentNode.position.x, y: parentNode.position.y + 350 },
-                        data: { name, description }
-                    };
-                    newEdge = {
-                        id: `edge-${parentId}-${newNodeId}`, source: parentId, target: newNodeId,
-                        sourceHandle: 'child-source', targetHandle: 'period-target',
-                        style: { stroke: 'hsl(var(--primary))' },
-                    };
-                } else if (type === 'scene' && parentNode.type === 'event') {
-                    newNode = {
-                        id: newNodeId, type: 'scene',
-                        position: { x: parentNode.position.x, y: parentNode.position.y + 350 },
-                        data: { name, description }
-                    };
-                    newEdge = {
-                        id: `edge-${parentId}-${newNodeId}`, source: parentId, target: newNodeId,
-                        sourceHandle: 'scene-source', targetHandle: 'event-target',
-                        style: { stroke: 'hsl(var(--accent))' },
-                    };
-                } else if (type === 'period' && parentNode.type === 'period') {
-                  const xOffset = Math.random() > 0.5 ? 300 : -300;
-                  const direction = xOffset > 0 ? 'right' : 'left';
-                  newNode = {
-                      id: newNodeId, type: 'period',
-                      position: { x: parentNode.position.x + xOffset, y: parentNode.position.y },
-                      data: { name, description }
-                  };
-                  newEdge = {
-                    id: `edge-${direction === 'left' ? newNodeId : parentId}-${direction === 'left' ? parentId : newNodeId}`,
-                    source: direction === 'left' ? newNodeId : parentId,
-                    target: direction === 'left' ? parentId : newNodeId,
-                    sourceHandle: 'peer-source',
-                    targetHandle: 'peer-target',
-                    style: { stroke: 'hsl(var(--accent))' },
-                  };
-                }
-            }
-
-            if (newNode) {
-              setNodes(nds => nds.concat(newNode));
-              if (newEdge) {
-                setEdges(eds => addEdge(newEdge, eds));
-              }
-              // Use a timeout to allow the state to update before ending the turn
-              setTimeout(() => {
-                handleEndTurn();
-                setIsAiTurn(false);
-              }, 1000);
-            } else {
-              throw new Error("AI failed to create a valid new node.")
-            }
+      const move = determineAiMove();
+      const parentNode = nodes.find(n => n.id === move.parentId);
+  
+      // 2. Generate creative content using Genkit
+      const content = await generateNodeContent({
+        gameSeed: narrative.gameSeed,
+        personality: activePlayer.personality || 'Neutral',
+        nodeType: move.type as 'period' | 'event' | 'scene',
+        parentContext: parentNode ? { name: parentNode.data.name, description: parentNode.data.description } : undefined,
+      });
+  
+      // 3. Apply the move to the board
+      if (content) {
+        const { name, description } = content;
+        const newNodeId = getUniqueNodeId(move.type);
+        let newNode: Node | null = null;
+        let newEdge: Edge | null = null;
+  
+        if (move.type === 'period' && !parentNode) {
+          newNode = {
+            id: newNodeId, type: 'period',
+            position: { x: 100, y: 100 },
+            data: { name, description }
+          };
+        } else if (parentNode) {
+          const { type, parentId } = move;
+          if (type === 'event' && parentNode.type === 'period') {
+            newNode = { id: newNodeId, type, position: { x: parentNode.position.x, y: parentNode.position.y + 350 }, data: { name, description } };
+            newEdge = { id: `edge-${parentId}-${newNodeId}`, source: parentId, target: newNodeId, sourceHandle: 'child-source', targetHandle: 'period-target', style: { stroke: 'hsl(var(--primary))' } };
+          } else if (type === 'scene' && parentNode.type === 'event') {
+            newNode = { id: newNodeId, type, position: { x: parentNode.position.x, y: parentNode.position.y + 350 }, data: { name, description } };
+            newEdge = { id: `edge-${parentId}-${newNodeId}`, source: parentId, target: newNodeId, sourceHandle: 'scene-source', targetHandle: 'event-target', style: { stroke: 'hsl(var(--accent))' } };
+          } else if (type === 'period' && parentNode.type === 'period') {
+            const direction = Math.random() > 0.5 ? 'right' : 'left';
+            const xOffset = direction === 'right' ? 300 : -300;
+            newNode = { id: newNodeId, type, position: { x: parentNode.position.x + xOffset, y: parentNode.position.y }, data: { name, description } };
+            newEdge = { id: `edge-${direction === 'left' ? newNodeId : parentId}-${direction === 'left' ? parentId : newNodeId}`, source: direction === 'left' ? newNodeId : parentId, target: direction === 'left' ? parentId : newNodeId, sourceHandle: 'peer-source', targetHandle: 'peer-target', style: { stroke: 'hsl(var(--accent))' } };
+          }
         }
+  
+        if (newNode) {
+          setNodes(nds => nds.concat(newNode));
+          if (newEdge) {
+            setEdges(eds => addEdge(newEdge, eds));
+          }
+          setTimeout(() => {
+            handleEndTurn();
+            setIsAiTurn(false);
+          }, 1000);
+        } else {
+          throw new Error("AI failed to create a valid new node based on strategy.");
+        }
+      }
     } catch (error) {
-        console.error("AI turn failed:", error);
-        toast({ variant: 'destructive', title: "AI Error", description: "The AI player failed to make a move." });
-        // End turn even if AI fails, to not block the game
-        handleEndTurn();
+      console.error("AI turn failed:", error);
+      toast({ variant: 'destructive', title: "AI Error", description: "The AI player failed to make a move." });
+      handleEndTurn(); // End turn even if AI fails
     } finally {
-      // In case of error without state update, ensure isAiTurn is reset.
-      // The successful path resets it in the timeout.
-       if (isAiTurn) {
-         setTimeout(() => setIsAiTurn(false), 1000);
-       }
+      if (isAiTurn) { // Ensure state is reset in case of early error
+        setTimeout(() => setIsAiTurn(false), 1000);
+      }
     }
-}, [narrative, activePlayer, isAiTurn, nodes, handleEndTurn, toast]);
+  }, [narrative, activePlayer, isAiTurn, nodes, handleEndTurn, toast]);
 
   useEffect(() => {
     if (activePlayer?.isAI) {

@@ -1,136 +1,72 @@
 'use server';
 /**
- * @fileOverview Suggests the next move for an AI player in the game.
+ * @fileOverview Generates the creative content (name and description) for a new node.
  * 
- * - suggestNextMove - A function that suggests the next game move.
- * - SuggestNextMoveInput - The input type for the suggestNextMove function.
- * - SuggestNextMoveOutput - The return type for the suggestNextMove function.
+ * - generateNodeContent - A function that generates creative content for a new game node.
+ * - GenerateNodeContentInput - The input type for the generateNodeContent function.
+ * - GenerateNodeContentOutput - The return type for the generateNodeContent function.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import type { Narrative, Player } from '@/lib/types';
+import type { GameSeed } from '@/lib/types';
 
-export type SuggestNextMoveInput = {
-    narrative: Narrative;
-    player: Player;
-};
-
-const SuggestNextMoveInputSchema = z.object({
-    narrative: z.custom<Narrative>(),
-    player: z.custom<Player>(),
+export const GenerateNodeContentInputSchema = z.object({
+    gameSeed: z.custom<GameSeed>(),
+    personality: z.string(),
+    nodeType: z.enum(['period', 'event', 'scene']),
+    parentContext: z.object({
+        name: z.string(),
+        description: z.string(),
+    }).optional(),
 });
+export type GenerateNodeContentInput = z.infer<typeof GenerateNodeContentInputSchema>;
 
-const SuggestNextMoveOutputSchema = z.object({
-  node: z.object({
-    type: z.enum(['period', 'event', 'scene']),
-    name: z.string().describe('The name of the new node.'),
-    description: z.string().describe('A description for the new node.'),
-    parentId: z.string().describe('The ID of the parent node to connect to. For a new Period, this can be another Period ID to connect to, or an empty string to create a root Period.'),
-  }),
-  reason: z.string().describe('The reasoning behind why this move was chosen.'),
+export const GenerateNodeContentOutputSchema = z.object({
+  name: z.string().describe('The creative name for the new node.'),
+  description: z.string().describe('The creative description for the new node.'),
 });
+export type GenerateNodeContentOutput = z.infer<typeof GenerateNodeContentOutputSchema>;
 
-export type SuggestNextMoveOutput = z.infer<typeof SuggestNextMoveOutputSchema>;
 
-export async function suggestNextMove(input: SuggestNextMoveInput): Promise<SuggestNextMoveOutput> {
+export async function generateNodeContent(input: GenerateNodeContentInput): Promise<GenerateNodeContentOutput> {
   
-  const suggestNextMoveFlow = ai.defineFlow(
+  const generateContentFlow = ai.defineFlow(
     {
-      name: 'suggestNextMoveFlow',
-      inputSchema: SuggestNextMoveInputSchema,
-      outputSchema: SuggestNextMoveOutputSchema,
+      name: 'generateContentFlow',
+      inputSchema: GenerateNodeContentInputSchema,
+      outputSchema: GenerateNodeContentOutputSchema,
     },
-    async ({ narrative, player }) => {
-      const prompt = ai.definePrompt({
-        name: 'suggestNextMovePrompt',
-        input: { schema: SuggestNextMoveInputSchema },
-        output: { schema: SuggestNextMoveOutputSchema },
-        prompt: `You are an AI player in a collaborative storytelling game called Microscope.
-        Your goal is to add to the shared timeline by creating a new Period, Event, or Scene.
-        You have a specific personality that should guide your choices: ${player.personality || 'Neutral'}.
-
-        Here is the current state of the game:
+    async (input) => {
+        const { gameSeed, personality, nodeType, parentContext } = input;
         
-        BIG PICTURE: {{narrative.gameSeed.bigPicture}}
+        const parentInfo = parentContext 
+            ? `It should be a child of "${parentContext.name}" which is about: "${parentContext.description}".`
+            : "This is the very first entry in the timeline.";
 
-        PALETTE (things to include):
-        {{#each narrative.gameSeed.palette}}
-        - {{this}}
-        {{/each}}
-        
-        BANNED (things to avoid):
-        {{#each narrative.gameSeed.banned}}
-        - {{this}}
-        {{/each}}
+        const prompt = ai.definePrompt({
+            name: 'generateNodeContentPrompt',
+            input: { schema: GenerateNodeContentInputSchema },
+            output: { schema: GenerateNodeContentOutputSchema },
+            prompt: `You are an AI player with a "${personality}" personality in a collaborative storytelling game.
+            Your task is to invent a creative name and a compelling description for a new ${nodeType}.
+            
+            The overall story guidelines are:
+            BIG PICTURE: ${gameSeed.bigPicture}
+            PALETTE (things to include): ${gameSeed.palette.join(', ')}
+            BANNED (things to avoid): ${gameSeed.banned.join(', ')}
 
-        FOCUS: {{narrative.focus}}
+            The new ${nodeType} you are creating should fit into the timeline. ${parentInfo}
 
-        EXISTING TIMELINE:
-        {{#each narrative.periods}}
-        Period: "{{this.name}}" (ID: {{this.id}}) - {{this.description}}
-          {{#each this.events}}
-          Event: "{{this.name}}" (ID: {{this.id}}) - {{this.description}}
-            {{#each this.scenes}}
-            Scene: "{{this.name}}" (ID: {{this.id}}) - {{this.description}}
-            {{/each}}
-          {{/each}}
-        {{/each}}
-
-        Your task is to suggest the *next* single node to add to the timeline.
-        
-        Rules for your move:
-        1. You can only add ONE new node.
-        2. Your new node must be a child of an existing node.
-           - A new Period can be a child of an existing Period (creating a sequence).
-           - A new Event must be a child of an existing Period.
-           - A new Scene must be a child of an existing Event.
-        3. Your addition should make sense in the context of the Big Picture, Palette, Banned items, and the existing timeline. If a Focus is set, prioritize adding something related to the Focus.
-        4. Provide a creative name and a compelling description for the new node.
-        5. If there are no periods, you must create a period. The parentId can be an empty string.
-        6. If there are periods but no events, you should probably create an event.
-        7. If there are events but no scenes, you should probably create a scene.
-        8. Be creative and build upon what is already there, always keeping your personality in mind: ${player.personality || 'Neutral'}.
-
-        Based on the rules and the current timeline, decide what to add. Return your decision in the specified JSON format.
-        `,
-      });
-
-      // If there are no nodes at all, create a root period.
-      if (narrative.periods.length === 0) {
-        const output = await ai.generate({
-          prompt: `You are an AI player with a "${player.personality || 'Neutral'}" personality in a collaborative storytelling game called Microscope.
-          The goal is to create a timeline. The timeline is currently empty.
-          Your first task is to create the very first Period for the timeline, according to your personality.
-          
-          BIG PICTURE: ${narrative.gameSeed.bigPicture}
-          PALETTE (things to include): ${narrative.gameSeed.palette.join(', ')}
-          BANNED (things to avoid): ${narrative.gameSeed.banned.join(', ')}
-
-          Invent a name and a description for the first Period.
-          `,
-          output: {
-              schema: z.object({
-                  name: z.string(),
-                  description: z.string()
-              })
-          }
+            Be creative and embody your "${personality}" personality in the content you create.
+            Return your response in the specified JSON format with a 'name' and a 'description'.
+            `,
         });
-        return {
-          node: {
-            type: 'period',
-            name: output.output!.name,
-            description: output.output!.description,
-            parentId: '', // No parent for the first period
-          },
-          reason: `As a ${player.personality || 'Neutral'} AI, I decided to start the timeline with this period because the timeline was empty.`,
-        };
-      }
 
-      const { output } = await prompt({ narrative, player });
+      const { output } = await prompt(input);
       return output!;
     }
   );
   
-  return suggestNextMoveFlow(input);
+  return generateContentFlow(input);
 }
