@@ -11,7 +11,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import type { GameSeed } from '@/lib/types';
 
-export const GenerateNodeContentInputSchema = z.object({
+const GenerateNodeContentInputSchema = z.object({
     gameSeed: z.custom<GameSeed>(),
     personality: z.string(),
     nodeType: z.enum(['period', 'event', 'scene']),
@@ -22,7 +22,7 @@ export const GenerateNodeContentInputSchema = z.object({
 });
 export type GenerateNodeContentInput = z.infer<typeof GenerateNodeContentInputSchema>;
 
-export const GenerateNodeContentOutputSchema = z.object({
+const GenerateNodeContentOutputSchema = z.object({
   name: z.string().describe('The creative name for the new node.'),
   description: z.string().describe('The creative description for the new node.'),
 });
