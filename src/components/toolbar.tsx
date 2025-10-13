@@ -27,7 +27,7 @@ export default function Toolbar({ addNode, getSuggestions, isGenerating, isRevie
       <div className="flex items-center gap-2 p-1 rounded-lg border bg-card">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={() => addNode('period')} disabled={!canCreateNode}>
+            <Button variant="ghost" size="icon" onClick={() => addNode('period')} disabled={!canCreateNode || isGenerating}>
               <CalendarPlus />
             </Button>
           </TooltipTrigger>
@@ -37,7 +37,7 @@ export default function Toolbar({ addNode, getSuggestions, isGenerating, isRevie
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={() => addNode('event')} disabled={!canCreateNode}>
+            <Button variant="ghost" size="icon" onClick={() => addNode('event')} disabled={!canCreateNode || isGenerating}>
               <Milestone />
             </Button>
           </TooltipTrigger>
@@ -47,7 +47,7 @@ export default function Toolbar({ addNode, getSuggestions, isGenerating, isRevie
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={() => addNode('scene')} disabled={!canCreateNode}>
+            <Button variant="ghost" size="icon" onClick={() => addNode('scene')} disabled={!canCreateNode || isGenerating}>
               <Camera />
             </Button>
           </TooltipTrigger>
@@ -132,3 +132,5 @@ export default function Toolbar({ addNode, getSuggestions, isGenerating, isRevie
     </TooltipProvider>
   );
 }
+
+    

@@ -27,6 +27,7 @@ import Toolbar from '@/components/toolbar';
 import AiSuggestionsPanel from '@/components/ai-suggestions-panel';
 import { Button } from './ui/button';
 import { suggestNewLegacies, SuggestNewLegaciesOutput } from '@/ai/flows/suggest-new-legacies';
+import { suggestNextMove } from '@/ai/flows/suggest-next-move';
 import { useToast } from '@/hooks/use-toast';
 import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene, GameSeed, Player, LogEntry } from '@/lib/types';
 import { PanelRight } from 'lucide-react';
@@ -56,6 +57,7 @@ function SessionWeaverFlow() {
   const [isSuggestionsPanelOpen, setSuggestionsPanelOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<SuggestNewLegaciesOutput>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAiTurn, setIsAiTurn] = useState(false);
   const [focus, setFocus] = useState('');
   const [narrative, setNarrative] = useState<Narrative | null>(null);
   const [isGameSeedModalOpen, setGameSeedModalOpen] = useState(false);
@@ -87,7 +89,7 @@ function SessionWeaverFlow() {
 
   const { toast } = useToast();
 
-  const handleEndTurn = () => {
+  const handleEndTurn = useCallback(() => {
     // Log changes
     const newNodes = nodes.filter(n => !nodesAtTurnStart.some(n_start => n_start.id === n.id));
     if (newNodes.length > 0) {
@@ -123,10 +125,10 @@ function SessionWeaverFlow() {
     setFirstNodeThisTurnId(null);
     setNodesAtTurnStart(nodes); // Snapshot nodes for the next turn
 
-    if (nextPlayer) {
+    if (players[nextPlayerIndex]) {
         toast({
             title: "Turn Ended",
-            description: `It's now ${nextPlayer.name}'s turn.`,
+            description: `It's now ${players[nextPlayerIndex].name}'s turn.`,
         });
     } else {
          toast({
@@ -134,7 +136,7 @@ function SessionWeaverFlow() {
             description: "No other players. It's your turn again.",
         })
     }
-  };
+  }, [activePlayer, nodes, nodesAtTurnStart, players, activePlayerIndex, toast]);
 
   useEffect(() => {
     const buildNarrative = () => {
@@ -189,11 +191,107 @@ function SessionWeaverFlow() {
     buildNarrative();
   }, [nodes, edges, gameSeed, focus, historyLog]);
 
-  useEffect(() => {
-    if (narrative) {
-        console.log(narrative);
+  const handleAiTurn = useCallback(async () => {
+    if (!narrative || !activePlayer?.isAI || isAiTurn) return;
+
+    setIsAiTurn(true);
+    try {
+        const move = await suggestNextMove(narrative);
+
+        if (move.action === 'addNode' && move.node) {
+            const { type, name, description, parentId } = move.node;
+            
+            let newNode: Node | null = null;
+            let newEdge: Edge | null = null;
+            const newNodeId = getUniqueNodeId(type);
+
+            // Handle root period creation
+            if (type === 'period' && !parentId) {
+                newNode = {
+                    id: newNodeId, type: 'period',
+                    position: { x: 100, y: 100 }, // Initial position for the first node
+                    data: { name, description }
+                };
+            } else {
+                const parentNode = nodes.find(n => n.id === parentId);
+                if (!parentNode) {
+                    throw new Error(`AI tried to add a child to a non-existent parent: ${parentId}`);
+                }
+
+                if (type === 'event' && parentNode.type === 'period') {
+                    newNode = {
+                        id: newNodeId, type: 'event',
+                        position: { x: parentNode.position.x, y: parentNode.position.y + 350 },
+                        data: { name, description }
+                    };
+                    newEdge = {
+                        id: `edge-${parentId}-${newNodeId}`, source: parentId, target: newNodeId,
+                        sourceHandle: 'child-source', targetHandle: 'period-target',
+                        style: { stroke: 'hsl(var(--primary))' },
+                    };
+                } else if (type === 'scene' && parentNode.type === 'event') {
+                    newNode = {
+                        id: newNodeId, type: 'scene',
+                        position: { x: parentNode.position.x, y: parentNode.position.y + 350 },
+                        data: { name, description }
+                    };
+                    newEdge = {
+                        id: `edge-${parentId}-${newNodeId}`, source: parentId, target: newNodeId,
+                        sourceHandle: 'scene-source', targetHandle: 'event-target',
+                        style: { stroke: 'hsl(var(--accent))' },
+                    };
+                } else if (type === 'period' && parentNode.type === 'period') {
+                  const xOffset = Math.random() > 0.5 ? 300 : -300;
+                  const direction = xOffset > 0 ? 'right' : 'left';
+                  newNode = {
+                      id: newNodeId, type: 'period',
+                      position: { x: parentNode.position.x + xOffset, y: parentNode.position.y },
+                      data: { name, description }
+                  };
+                  newEdge = {
+                    id: `edge-${direction === 'left' ? newNodeId : parentId}-${direction === 'left' ? parentId : newNodeId}`,
+                    source: direction === 'left' ? newNodeId : parentId,
+                    target: direction === 'left' ? parentId : newNodeId,
+                    sourceHandle: 'peer-source',
+                    targetHandle: 'peer-target',
+                    style: { stroke: 'hsl(var(--accent))' },
+                  };
+                }
+            }
+
+            if (newNode) {
+              setNodes(nds => nds.concat(newNode));
+              if (newEdge) {
+                setEdges(eds => addEdge(newEdge, eds));
+              }
+              // Use a timeout to allow the state to update before ending the turn
+              setTimeout(() => {
+                handleEndTurn();
+                setIsAiTurn(false);
+              }, 1000);
+            } else {
+              throw new Error("AI failed to create a valid new node.")
+            }
+        }
+    } catch (error) {
+        console.error("AI turn failed:", error);
+        toast({ variant: 'destructive', title: "AI Error", description: "The AI player failed to make a move." });
+        // End turn even if AI fails, to not block the game
+        handleEndTurn();
+    } finally {
+      // In case of error without state update, ensure isAiTurn is reset.
+      // The successful path resets it in the timeout.
+       if (isAiTurn) {
+         setTimeout(() => setIsAiTurn(false), 1000);
+       }
     }
-  }, [narrative]);
+}, [narrative, activePlayer, isAiTurn, nodes, handleEndTurn, toast]);
+
+  useEffect(() => {
+    if (activePlayer?.isAI) {
+      handleAiTurn();
+    }
+  }, [activePlayer, handleAiTurn]);
 
 
   const updateNodeData = useCallback((nodeId: string, data: any) => {
@@ -213,6 +311,7 @@ function SessionWeaverFlow() {
 
   const addNode = (type: 'period' | 'event' | 'scene') => {
     if (!canCreateNode) return;
+    if (activePlayer?.isAI) return;
     if (isHost && nodesCreatedThisTurn > 0) return;
     const newNodeId = getUniqueNodeId(type);
     const newNode: Node = {
@@ -227,6 +326,7 @@ function SessionWeaverFlow() {
   
   const addPeriod = (direction: 'left' | 'right', sourceNodeId: string) => {
     if (!canCreateNode) return;
+    if (activePlayer?.isAI) return;
     if (isHost && nodesCreatedThisTurn > 0) return;
     const sourceNode = nodes.find(n => n.id === sourceNodeId);
     if (!sourceNode) return;
@@ -257,6 +357,7 @@ function SessionWeaverFlow() {
 
   const addEvent = (sourceNodeId: string) => {
     if (!canCreateNode) return;
+    if (activePlayer?.isAI) return;
     if (isHost && nodesCreatedThisTurn > 0 && sourceNodeId !== firstNodeThisTurnId) return;
 
     const sourceNode = nodes.find(n => n.id === sourceNodeId);
@@ -287,6 +388,7 @@ function SessionWeaverFlow() {
 
   const addScene = (sourceNodeId: string) => {
     if (!canCreateNode) return;
+    if (activePlayer?.isAI) return;
     if (isHost && nodesCreatedThisTurn > 0 && sourceNodeId !== firstNodeThisTurnId) return;
 
     const sourceNode = nodes.find(n => n.id === sourceNodeId);
@@ -521,8 +623,11 @@ function SessionWeaverFlow() {
 
   const nodesWithUpdater = useMemo(() => {
     const peerEdges = edges.filter(e => e.sourceHandle === 'peer-source' || e.targetHandle === 'peer-target');
+    const isPlayerTurn = !activePlayer?.isAI;
+
     return nodes.map(n => {
-        const canAddChild = canCreateNode && (!isHost || nodesCreatedThisTurn === 0 || (nodesCreatedThisTurn === 1 && firstNodeThisTurnId === n.id));
+      const isNodeCreatable = isPlayerTurn && canCreateNode && (!isHost || nodesCreatedThisTurn === 0 || (nodesCreatedThisTurn === 1 && firstNodeThisTurnId === n.id));
+
       if (n.type === 'period') {
         const isConnectedRight = peerEdges.some(e => e.source === n.id);
         const isConnectedLeft = peerEdges.some(e => e.target === n.id);
@@ -537,8 +642,8 @@ function SessionWeaverFlow() {
             isConnectedLeft,
             isConnectedRight,
             disconnectPeer,
-            canCreateNode: canHostCreateGlobalNode,
-            canAddChild: canAddChild,
+            canCreateNode: isPlayerTurn && canHostCreateGlobalNode,
+            canAddChild: isNodeCreatable,
           }
         };
       }
@@ -550,13 +655,13 @@ function SessionWeaverFlow() {
             updateNodeData,
             deleteNode,
             addScene,
-            canAddChild: canAddChild,
+            canAddChild: isNodeCreatable,
           }
         };
       }
       return {...n, data: {...n.data, updateNodeData, deleteNode }};
     });
-  }, [nodes, edges, updateNodeData, addPeriod, deleteNode, addEvent, addScene, disconnectPeer, canCreateNode, canHostCreateGlobalNode, nodesCreatedThisTurn, firstNodeThisTurnId, isHost]);
+  }, [nodes, edges, updateNodeData, addPeriod, deleteNode, addEvent, addScene, disconnectPeer, canCreateNode, canHostCreateGlobalNode, nodesCreatedThisTurn, firstNodeThisTurnId, isHost, activePlayer]);
 
   return (
     <NarrativeContext.Provider value={{ narrative }}>
@@ -567,14 +672,14 @@ function SessionWeaverFlow() {
                   <Toolbar
                       addNode={addNode}
                       getSuggestions={handleGetSuggestions}
-                      isGenerating={isGenerating}
+                      isGenerating={isGenerating || isAiTurn}
                       isReviewMode={isReviewMode}
                       setReviewMode={setReviewMode}
                       importHistory={importHistory}
                       exportHistory={exportHistory}
                       onGameSeedClick={() => setGameSeedModalOpen(true)}
                       onMultiplayerClick={() => setMultiplayerModalOpen(true)}
-                      canCreateNode={canHostCreateGlobalNode}
+                      canCreateNode={canHostCreateGlobalNode && !activePlayer?.isAI}
                   />
                   {suggestions.length > 0 && !isSuggestionsPanelOpen && (
                       <Button variant="outline" size="icon" onClick={() => setSuggestionsPanelOpen(p => !p)}>
@@ -593,9 +698,9 @@ function SessionWeaverFlow() {
                       onConnect={onConnect}
                       nodeTypes={nodeTypes}
                       defaultEdgeOptions={defaultEdgeOptions}
-                      nodesDraggable={!isReviewMode}
-                      nodesConnectable={!isReviewMode}
-                      elementsSelectable={!isReviewMode}
+                      nodesDraggable={!isReviewMode && !activePlayer?.isAI}
+                      nodesConnectable={!isReviewMode && !activePlayer?.isAI}
+                      elementsSelectable={!isReviewMode && !activePlayer?.isAI}
                       fitView
                       className={isReviewMode ? 'review-mode' : ''}
                   >
@@ -611,6 +716,8 @@ function SessionWeaverFlow() {
                         nextPlayer={nextPlayer}
                         nodesCreatedThisTurn={nodesCreatedThisTurn}
                         maxNodesPerTurn={maxNodesPerTurn}
+                        isAiTurn={isAiTurn}
+                        isPlayerTurn={!activePlayer?.isAI}
                       />
                       <Background />
                       <Controls />

@@ -44,6 +44,7 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
           onChange={onNameChange}
           placeholder="Event Name"
           className="text-base font-semibold"
+          disabled={!updateNodeData}
         />
         <Textarea
           value={description}
@@ -51,6 +52,7 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
           placeholder="Description..."
           className="text-sm"
           rows={3}
+          disabled={!updateNodeData}
         />
       </CardContent>
       <Handle type="target" position={Position.Top} id="period-target" className="w-3 h-3 !bg-primary" />
@@ -60,3 +62,5 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
 }
 
 export default memo(EventNode);
+
+    

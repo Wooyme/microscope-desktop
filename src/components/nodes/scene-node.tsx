@@ -32,6 +32,8 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
     return text.substring(0, maxLength) + '...';
   };
 
+  const isEditable = !!updateNodeData;
+
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <Card className="w-64 shadow-lg border-2 border-green-500/50 group relative">
@@ -44,8 +46,8 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
             Scene
           </CardTitle>
         </CardHeader>
-        <DialogTrigger asChild>
-          <div className="cursor-pointer">
+        <DialogTrigger asChild disabled={!isEditable}>
+          <div className={cn(isEditable && "cursor-pointer")}>
             <CardContent className="p-4 space-y-2">
               <Input
                 value={name}
@@ -53,6 +55,7 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
                 onClick={(e) => e.stopPropagation()}
                 placeholder="Scene Name"
                 className="text-base font-semibold"
+                disabled={!isEditable}
               />
               <p className="text-sm text-muted-foreground h-[60px] overflow-hidden">
                 {truncateText(description.replace(/<[^>]+>/g, ''), 100) || "Click to add a description..."}
@@ -82,3 +85,5 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
 }
 
 export default memo(SceneNode);
+
+    

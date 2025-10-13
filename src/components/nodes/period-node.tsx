@@ -53,6 +53,7 @@ function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
           onChange={onNameChange}
           placeholder="Period Name"
           className="text-base font-semibold"
+          disabled={!updateNodeData}
         />
         <Textarea
           value={description}
@@ -60,6 +61,7 @@ function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
           placeholder="Description..."
           className="text-sm"
           rows={3}
+          disabled={!updateNodeData}
         />
       </CardContent>
       <Handle type="source" position={Position.Right} id="peer-source" className="w-3 h-3 !bg-accent" />
@@ -70,3 +72,5 @@ function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
 }
 
 export default memo(PeriodNode);
+
+    
