@@ -36,6 +36,7 @@ export type History = {
 export type Player = {
   id: string;
   name: string;
+  isAI?: boolean;
 };
 
 export type LogEntry = {
