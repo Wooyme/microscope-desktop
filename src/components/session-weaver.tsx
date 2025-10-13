@@ -28,10 +28,11 @@ import AiSuggestionsPanel from '@/components/ai-suggestions-panel';
 import { Button } from './ui/button';
 import { suggestNewLegacies, SuggestNewLegaciesOutput } from '@/ai/flows/suggest-new-legacies';
 import { useToast } from '@/hooks/use-toast';
-import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene, GameSeed } from '@/lib/types';
+import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene, GameSeed, Player } from '@/lib/types';
 import { PanelRight } from 'lucide-react';
 import SettingsPanel from './settings-panel';
 import GameSeedModal from './game-seed-modal';
+import MultiplayerSettingsModal from './multiplayer-settings-modal';
 
 const initialNodes: Node[] = [
   { id: 'period-1', type: 'period', position: { x: 100, y: 100 }, data: { name: 'The Ancient Era', description: 'A time of myth and legends.' } },
@@ -62,6 +63,12 @@ function SessionWeaverFlow() {
     palette: ['Ancient alien artifacts', 'Political intrigue', 'FTL travel consequences'],
     banned: ['Magic', 'Time travel']
   });
+  const [players, setPlayers] = useState<Player[]>([
+    { id: 'player-1', name: 'Alex' },
+    { id: 'player-2', name: 'Sam' },
+  ]);
+  const [isMultiplayerModalOpen, setMultiplayerModalOpen] = useState(false);
+
 
   const { toast } = useToast();
 
@@ -463,6 +470,7 @@ function SessionWeaverFlow() {
                       importHistory={importHistory}
                       exportHistory={exportHistory}
                       onGameSeedClick={() => setGameSeedModalOpen(true)}
+                      onMultiplayerClick={() => setMultiplayerModalOpen(true)}
                   />
                   {suggestions.length > 0 && !isSuggestionsPanelOpen && (
                       <Button variant="outline" size="icon" onClick={() => setSuggestionsPanelOpen(p => !p)}>
@@ -508,6 +516,12 @@ function SessionWeaverFlow() {
                   onClose={() => setGameSeedModalOpen(false)}
                   gameSeed={gameSeed}
                   setGameSeed={setGameSeed}
+              />
+              <MultiplayerSettingsModal
+                isOpen={isMultiplayerModalOpen}
+                onClose={() => setMultiplayerModalOpen(false)}
+                players={players}
+                setPlayers={setPlayers}
               />
           </div>
       </div>

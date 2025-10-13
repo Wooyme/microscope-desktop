@@ -33,6 +33,11 @@ export type History = {
     legacies: Legacy[];
 };
 
+export type Player = {
+  id: string;
+  name: string;
+};
+
 // Types for the hierarchical narrative context
 export interface NarrativeScene {
   id: string;

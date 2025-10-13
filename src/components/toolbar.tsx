@@ -1,4 +1,4 @@
-import { BrainCircuit, CalendarPlus, Milestone, Eye, EyeOff, FileDown, FileUp, Camera, Settings } from 'lucide-react';
+import { BrainCircuit, CalendarPlus, Milestone, Eye, EyeOff, FileDown, FileUp, Camera, Settings, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
@@ -15,9 +15,10 @@ type ToolbarProps = {
   exportHistory: () => void;
   importHistory: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onGameSeedClick: () => void;
+  onMultiplayerClick: () => void;
 };
 
-export default function Toolbar({ addNode, getSuggestions, isGenerating, isReviewMode, setReviewMode, exportHistory, importHistory, onGameSeedClick }: ToolbarProps) {
+export default function Toolbar({ addNode, getSuggestions, isGenerating, isReviewMode, setReviewMode, exportHistory, importHistory, onGameSeedClick, onMultiplayerClick }: ToolbarProps) {
   const importInputRef = React.useRef<HTMLInputElement>(null);
 
   return (
@@ -73,6 +74,16 @@ export default function Toolbar({ addNode, getSuggestions, isGenerating, isRevie
           </TooltipTrigger>
           <TooltipContent>
             <p>Edit Game Seed</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" onClick={onMultiplayerClick}>
+              <Users />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Multiplayer Settings</p>
           </TooltipContent>
         </Tooltip>
         <Separator orientation="vertical" className="h-6" />
