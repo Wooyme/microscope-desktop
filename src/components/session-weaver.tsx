@@ -34,7 +34,7 @@ import TurnPanel from './turn-panel';
 
 const initialNodes: Node[] = [
   { id: 'period-1', type: 'period', position: { x: 100, y: 100 }, data: { name: 'Bookend: The Beginning', description: 'The start of our history.' } },
-  { id: 'period-2', type: 'period', position: { x: 500, y: 100 }, data: { name: 'Bookend: The End', description: 'The conclusion of our history.' } },
+  { id: 'period-2', type: 'period', position: { x: 800, y: 100 }, data: { name: 'Bookend: The End', description: 'The conclusion of our history.' } },
 ];
 
 const initialEdges: Edge[] = [];
