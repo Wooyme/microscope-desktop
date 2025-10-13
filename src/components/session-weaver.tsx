@@ -26,7 +26,7 @@ import SceneNode from '@/components/nodes/scene-node';
 import Toolbar from '@/components/toolbar';
 import { generateNodeContent } from '@/ai/flows/suggest-next-move';
 import { useToast } from '@/hooks/use-toast';
-import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene, GameSeed, Player, LogEntry } from '@/lib/types';
+import type { Period, Event, Legacy, History, Scene, Narrative, NarrativePeriod, NarrativeEvent, NarrativeScene, GameSeed, Player, LogEntry, AiStrategy } from '@/lib/types';
 import SettingsPanel from './settings-panel';
 import GameSeedModal from './game-seed-modal';
 import MultiplayerSettingsModal from './multiplayer-settings-modal';
@@ -62,7 +62,7 @@ function SessionWeaverFlow() {
   });
   const [players, setPlayers] = useState<Player[]>([
     { id: 'player-1', name: 'Alex' },
-    { id: 'player-2', name: 'AI Creative', isAI: true, personality: 'Creative' },
+    { id: 'player-2', name: 'AI Creative', isAI: true, personality: 'Creative', strategy: 'Detailer' },
   ]);
   const [isMultiplayerModalOpen, setMultiplayerModalOpen] = useState(false);
   const [activePlayerIndex, setActivePlayerIndex] = useState(0);
@@ -219,7 +219,7 @@ function SessionWeaverFlow() {
     setIsAiTurn(true);
   
     try {
-      const move = determineAiMove(nodes, edges, activePlayer.personality);
+      const move = determineAiMove(nodes, edges, activePlayer.strategy);
       if (!move) {
         throw new Error("AI could not determine a valid move.");
       }

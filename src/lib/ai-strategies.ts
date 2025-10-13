@@ -1,4 +1,5 @@
 import { Node, Edge } from '@xyflow/react';
+import type { AiStrategy } from './types';
 
 type AiMove = {
   type: 'period' | 'event' | 'scene';
@@ -79,15 +80,13 @@ const detailerStrategy = (nodes: Node[], edges: Edge[]): AiMove | null => {
     }
 };
 
-export const determineAiMove = (nodes: Node[], edges: Edge[], personality?: string): AiMove | null => {
-  switch (personality) {
-    case 'Historian':
-    case 'Logical':
+export const determineAiMove = (nodes: Node[], edges: Edge[], strategy?: AiStrategy): AiMove | null => {
+  switch (strategy) {
+    case 'Builder':
       return builderStrategy(nodes, edges);
-    case 'Creative':
-    case 'Chaotic':
-        return detailerStrategy(nodes, edges);
-    case 'Pragmatist':
+    case 'Detailer':
+      return detailerStrategy(nodes, edges);
+    case 'Balanced':
     default:
       return balancedStrategy(nodes, edges);
   }

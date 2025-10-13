@@ -36,11 +36,14 @@ export type History = {
     legacies: Legacy[];
 };
 
+export type AiStrategy = 'Balanced' | 'Builder' | 'Detailer';
+
 export type Player = {
   id: string;
   name: string;
   isAI?: boolean;
   personality?: string;
+  strategy?: AiStrategy;
 };
 
 export type LogEntry = {
