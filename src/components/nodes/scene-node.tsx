@@ -92,7 +92,7 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
         <DialogHeader>
           <DialogTitle>Edit Scene: {name}</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="pr-4">
+        <ScrollArea className="pr-4 flex-grow">
           <div className="py-4">
             <CharacterEditor
               content={description}
@@ -102,7 +102,7 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
             />
           </div>
         </ScrollArea>
-        <DialogFooter className="mt-auto">
+        <DialogFooter className="mt-auto pt-4">
           <Button onClick={() => setIsModalOpen(false)}>Done</Button>
         </DialogFooter>
       </DialogContent>

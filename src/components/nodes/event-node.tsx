@@ -95,7 +95,7 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
         <DialogHeader>
           <DialogTitle>Edit Event: {name}</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="pr-4">
+        <ScrollArea className="pr-4 flex-grow">
           <div className="py-4">
             <CharacterEditor
               content={description}
@@ -105,7 +105,7 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
             />
           </div>
         </ScrollArea>
-        <DialogFooter className="mt-auto">
+        <DialogFooter className="mt-auto pt-4">
           <Button onClick={() => setIsModalOpen(false)}>Done</Button>
         </DialogFooter>
       </DialogContent>
