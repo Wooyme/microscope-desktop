@@ -30,6 +30,7 @@ export type Legacy = {
 };
 
 export type History = {
+    gameSeed: GameSeed;
     periods: Period[];
     events: Event[];
     scenes: Scene[];

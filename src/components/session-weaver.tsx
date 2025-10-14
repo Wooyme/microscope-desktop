@@ -495,7 +495,7 @@ function SessionWeaverFlow() {
         description: e.data?.description || '',
       }));
 
-      const history: History = { periods, events, scenes, legacies };
+      const history: History = { gameSeed, periods, events, scenes, legacies };
       const dataStr = JSON.stringify(history, null, 2);
       const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
@@ -551,6 +551,10 @@ function SessionWeaverFlow() {
           target: l.target,
           data: { description: l.description }
         }));
+        
+        if (history.gameSeed) {
+          setGameSeed(history.gameSeed);
+        }
 
         nodeIdCounter = maxId + 1;
         setNodes(newNodes);
