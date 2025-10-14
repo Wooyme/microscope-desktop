@@ -74,6 +74,7 @@ function SessionWeaverFlow() {
 
   const [isAiReviewModalOpen, setAiReviewModalOpen] = useState(false);
   const [aiMoveProposal, setAiMoveProposal] = useState<{move: AiMove, content: CritiqueAndRegenerateOutput} | null>(null);
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
 
   const activePlayer = players[activePlayerIndex];
@@ -183,14 +184,13 @@ function SessionWeaverFlow() {
       toast({ variant: 'destructive', title: "AI Error", description: "The AI player failed to make a move." });
       handleEndTurn();
     } finally {
-      // Don't set isAiTurn to false here, as the modal is now open.
-      // It will be set to false after the modal is actioned.
+      // isAiTurn will be set to false when the review modal is closed or actioned.
     }
   }, [activePlayer, isAiTurn, nodes, edges, historyLog, gameSeed, handleEndTurn, toast]);
 
   const handleAiRegenerate = async (feedback: string) => {
     if (!aiMoveProposal || !activePlayer?.isAI) return;
-    setIsAiTurn(true); // Show thinking state
+    setIsRegenerating(true);
     try {
       const newContent = await critiqueAndRegenerate({
         personality: activePlayer.personality || 'Neutral',
@@ -200,11 +200,11 @@ function SessionWeaverFlow() {
         feedback: feedback,
       });
       setAiMoveProposal(prev => prev ? { ...prev, content: newContent } : null);
-      setIsAiTurn(false); // Hide thinking state only after success
     } catch (error) {
       console.error("AI regeneration failed:", error);
       toast({ variant: 'destructive', title: "AI Error", description: "Failed to regenerate content." });
-      setIsAiTurn(false); // Also hide on error
+    } finally {
+      setIsRegenerating(false);
     }
   };
 
@@ -655,7 +655,7 @@ function SessionWeaverFlow() {
                 isOpen={isAiReviewModalOpen}
                 proposal={aiMoveProposal?.content}
                 nodeType={aiMoveProposal?.move.type}
-                isRegenerating={isAiTurn}
+                isRegenerating={isRegenerating}
                 onAccept={handleAcceptAiMove}
                 onRegenerate={handleAiRegenerate}
                 onCancel={handleCancelAiMove}
@@ -672,5 +672,3 @@ export default function SessionWeaver() {
         </ReactFlowProvider>
     )
 }
-
-    
