@@ -20,7 +20,7 @@ const GenerateNodeContentInputSchema = z.object({
         description: z.string(),
     }).optional(),
 });
-export type GenerateNodeContentInput = z.infer<typeof GenerateNodeContentInputSchema>;
+type GenerateNodeContentInput = z.infer<typeof GenerateNodeContentInputSchema>;
 
 const GenerateNodeContentOutputSchema = z.object({
   name: z.string().describe('The creative name for the new node.'),

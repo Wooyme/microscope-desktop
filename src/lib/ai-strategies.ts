@@ -2,7 +2,7 @@
 import { Node, Edge } from '@xyflow/react';
 import type { AiStrategy, LogEntry } from './types';
 
-type AiMove = {
+export type AiMove = {
   type: 'period' | 'event' | 'scene';
   parentId: string | null;
 };

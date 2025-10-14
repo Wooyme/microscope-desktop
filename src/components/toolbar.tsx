@@ -1,4 +1,4 @@
-import { CalendarPlus, Milestone, Crown, FileDown, FileUp, Camera, Settings, Users } from 'lucide-react';
+import { CalendarPlus, Milestone, Crown, FileDown, FileUp, Camera, Settings, Users, FilePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
@@ -7,50 +7,58 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import React from 'react';
 
 type ToolbarProps = {
-  addNode: (type: 'period' | 'event' | 'scene') => void;
+  onNewGameClick: () => void;
+  onSaveClick: () => void;
+  onLoad: (event: React.ChangeEvent<HTMLInputElement>) => void;
   isGodMode: boolean;
   setGodMode: (value: boolean) => void;
-  exportHistory: () => void;
-  importHistory: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onGameSeedClick: () => void;
   onMultiplayerClick: () => void;
   canCreateNode: boolean;
 };
 
-export default function Toolbar({ addNode, isGodMode, setGodMode, exportHistory, importHistory, onGameSeedClick, onMultiplayerClick, canCreateNode }: ToolbarProps) {
+export default function Toolbar({ onNewGameClick, onSaveClick, onLoad, isGodMode, setGodMode, onGameSeedClick, onMultiplayerClick, canCreateNode }: ToolbarProps) {
   const importInputRef = React.useRef<HTMLInputElement>(null);
 
   return (
     <TooltipProvider>
-      <div className="flex items-center gap-2 p-1 rounded-lg border bg-card">
+      <div className="flex items-center gap-1 p-1 rounded-lg border bg-card">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={() => addNode('period')} disabled={!canCreateNode}>
-              <CalendarPlus />
+            <Button variant="ghost" size="icon" onClick={onNewGameClick}>
+              <FilePlus />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Add Period</p>
+            <p>New Game</p>
+          </TooltipContent>
+        </Tooltip>
+        <Separator orientation="vertical" className="h-6" />
+        <input
+            type="file"
+            ref={importInputRef}
+            className="hidden"
+            accept=".json"
+            onChange={onLoad}
+        />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" onClick={() => importInputRef.current?.click()}>
+              <FileUp />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Load Game</p>
           </TooltipContent>
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={() => addNode('event')} disabled={!canCreateNode}>
-              <Milestone />
+            <Button variant="ghost" size="icon" onClick={onSaveClick}>
+              <FileDown />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Add Event</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={() => addNode('scene')} disabled={!canCreateNode}>
-              <Camera />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Add Scene</p>
+            <p>Save Game</p>
           </TooltipContent>
         </Tooltip>
         <Separator orientation="vertical" className="h-6" />
@@ -72,34 +80,6 @@ export default function Toolbar({ addNode, isGodMode, setGodMode, exportHistory,
           </TooltipTrigger>
           <TooltipContent>
             <p>Multiplayer Settings</p>
-          </TooltipContent>
-        </Tooltip>
-        <Separator orientation="vertical" className="h-6" />
-        <input
-            type="file"
-            ref={importInputRef}
-            className="hidden"
-            accept=".json"
-            onChange={importHistory}
-        />
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={() => importInputRef.current?.click()}>
-              <FileUp />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Import History</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={exportHistory}>
-              <FileDown />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Export History</p>
           </TooltipContent>
         </Tooltip>
         <Separator orientation="vertical" className="h-6" />

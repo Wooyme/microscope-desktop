@@ -1,3 +1,5 @@
+import { Node, Edge } from "@xyflow/react";
+
 export type Period = {
     id: string;
     name: string;
@@ -55,39 +57,22 @@ export type LogEntry = {
     addedNodeIds: string[];
 }
 
-// Types for the hierarchical narrative context
-export interface NarrativeScene {
-  id: string;
-  name: string;
-  description: string;
-  imageUrl?: string;
-}
-
-export interface NarrativeEvent {
-  id:string;
-  name: string;
-  description: string;
-  imageUrl?: string;
-  scenes: NarrativeScene[];
-}
-
-export interface NarrativePeriod {
-  id: string;
-  name: string;
-  description: string;
-  imageUrl?: string;
-  events: NarrativeEvent[];
-}
-
 export interface GameSeed {
   bigPicture: string;
   palette: string[];
   banned: string[];
 }
 
-export interface Narrative {
-  gameSeed: GameSeed;
-  focus: string;
-  periods: NarrativePeriod[];
-  historyLog: LogEntry[];
+export type SaveFile = {
+    nodes: Node[];
+    edges: Edge[];
+    gameSeed: GameSeed;
+    players: Player[];
+    activePlayerIndex: number;
+    nodesCreatedThisTurn: number;
+    firstNodeThisTurnId: string | null;
+    nodesAtTurnStart: Node[];
+    historyLog: LogEntry[];
+    focus: string;
+    nodeIdCounter: number;
 }
