@@ -16,6 +16,7 @@ import { Loader2 } from 'lucide-react';
 import { critiqueAndRegenerate } from '@/ai/flows/critique-and-regenerate';
 import { useToast } from '@/hooks/use-toast';
 import type { CritiqueAndRegenerateOutput } from '@/lib/types';
+import { useTranslations } from 'next-intl';
 
 type AiReviewModalProps = {
   isOpen: boolean;
@@ -38,6 +39,8 @@ export default function AiReviewModal({
   parentNodeName,
   parentNodeType,
 }: AiReviewModalProps) {
+  const t = useTranslations('AiReviewModal');
+  const t_general = useTranslations('General');
   const [currentProposal, setCurrentProposal] = useState<CritiqueAndRegenerateOutput | null>(null);
   const [feedback, setFeedback] = useState('');
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -68,7 +71,7 @@ export default function AiReviewModal({
       setFeedback('');
     } catch (error) {
       console.error("AI regeneration failed:", error);
-      toast({ variant: 'destructive', title: "AI Error", description: "Failed to regenerate content." });
+      toast({ variant: 'destructive', title: t('errorTitle'), description: t('errorDescription') });
     } finally {
       setIsRegenerating(false);
     }
@@ -81,18 +84,23 @@ export default function AiReviewModal({
   };
 
   const showLoading = isRegenerating || !currentProposal;
+  
+  const parentContextText = parentNodeName && parentNodeType ? t.rich('parentContext', {
+    nodeType: t_general(nodeType as 'period' | 'event' | 'scene'),
+    parentNodeType: t_general(parentNodeType as 'period' | 'event' | 'scene'),
+    parentNodeName: parentNodeName,
+    strong: (chunks) => <strong>{chunks}</strong>,
+    em: (chunks) => <em>&quot;{chunks}&quot;</em>,
+  }) : '';
+
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">AI Suggestion</DialogTitle>
+          <DialogTitle className="font-headline">{t('title')}</DialogTitle>
           <DialogDescription>
-            The AI proposes the following {nodeType}.{' '}
-            {parentNodeName && parentNodeType && (
-                <span>This <strong>{nodeType}</strong> will be added under the <strong>{parentNodeType}</strong> named <em>&quot;{parentNodeName}&quot;</em>.</span>
-            )}
-            Review it, provide feedback for regeneration, or accept it.
+             {t('description', { nodeType: t_general(nodeType as 'period' | 'event' | 'scene') })} {parentContextText}
           </DialogDescription>
         </DialogHeader>
 
@@ -104,13 +112,13 @@ export default function AiReviewModal({
           ) : (
             <div className="space-y-4">
               <div>
-                <Label className="font-semibold">Name</Label>
+                <Label className="font-semibold">{t_general('name')}</Label>
                 <p className="text-lg font-bold p-2 border rounded-md bg-muted min-h-[2.5rem]">
                   {currentProposal?.name}
                 </p>
               </div>
               <div>
-                <Label className="font-semibold">Description</Label>
+                <Label className="font-semibold">{t_general('description')}</Label>
                 <p className="text-sm p-2 border rounded-md bg-muted min-h-[6rem]">
                   {currentProposal?.description}
                 </p>
@@ -119,10 +127,10 @@ export default function AiReviewModal({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="feedback">Feedback for Regeneration (Optional)</Label>
+            <Label htmlFor="feedback">{t('feedbackLabel')}</Label>
             <Textarea
               id="feedback"
-              placeholder="e.g., 'Make it more mysterious' or 'That name sounds too modern...'"
+              placeholder={t('feedbackPlaceholder')}
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
               disabled={isRegenerating}
@@ -132,14 +140,14 @@ export default function AiReviewModal({
 
         <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={onCancel} disabled={isRegenerating}>
-            Cancel Move
+            {t_general('cancel')}
           </Button>
           <Button onClick={handleRegenerate} disabled={!feedback.trim() || isRegenerating}>
             {isRegenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Regenerate
+            {t('regenerate')}
           </Button>
           <Button onClick={handleAccept} disabled={isRegenerating || !currentProposal}>
-            Accept
+            {t_general('accept')}
           </Button>
         </DialogFooter>
       </DialogContent>

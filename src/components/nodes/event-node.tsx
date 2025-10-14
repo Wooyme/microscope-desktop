@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { Textarea } from '../ui/textarea';
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
+import { useTranslations } from 'next-intl';
 
 type EventNodeData = {
   name: string;
@@ -23,6 +24,8 @@ type EventNodeData = {
 };
 
 function EventNode({ id, data }: NodeProps<EventNodeData>) {
+  const t = useTranslations('Nodes');
+  const t_general = useTranslations('General');
   const { name, description, imageUrl, updateNodeData, deleteNode, addScene, canAddChild } = data;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -46,6 +49,7 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
         <NodeToolbar
           onDelete={() => deleteNode(id)}
           onAddChild={canAddChild ? () => addScene(id) : undefined}
+          addChildTooltip={t('addSceneTooltip')}
         />
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-accent/10 p-0">
           {imageUrl ? (
@@ -54,14 +58,14 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
               <CardTitle className="text-lg font-headline flex items-center gap-2 absolute bottom-2 left-4 text-white">
                 <Sparkles className="w-5 h-5" />
-                Event
+                {t('event')}
               </CardTitle>
             </div>
           ) : (
             <div className='p-4'>
               <CardTitle className="text-lg font-headline flex items-center gap-2">
                 <Sparkles className="w-5 h-5" />
-                Event
+                {t('event')}
               </CardTitle>
             </div>
           )}
@@ -73,13 +77,13 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
                 value={name}
                 onChange={onNameChange}
                 onClick={(e) => e.stopPropagation()}
-                placeholder="Event Name"
+                placeholder={t('eventNamePlaceholder')}
                 className="text-base font-semibold"
                 disabled={!isEditable}
               />
                <Textarea
                 value={description.replace(/<[^>]+>/g, '')}
-                placeholder="Click to add a description..."
+                placeholder={t('descriptionPlaceholder')}
                 className="text-sm"
                 readOnly
                 disabled={!isEditable}
@@ -93,7 +97,7 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
       </Card>
       <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Edit Event: {name}</DialogTitle>
+          <DialogTitle>{t('editEventTitle', { name })}</DialogTitle>
         </DialogHeader>
         <ScrollArea className="pr-4 flex-grow">
           <div className="py-4">
@@ -106,7 +110,7 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
           </div>
         </ScrollArea>
         <DialogFooter className="mt-auto pt-4">
-          <Button onClick={() => setIsModalOpen(false)}>Done</Button>
+          <Button onClick={() => setIsModalOpen(false)}>{t_general('done')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

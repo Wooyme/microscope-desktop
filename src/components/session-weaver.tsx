@@ -34,6 +34,7 @@ import TurnPanel from './turn-panel';
 import { determineAiMove, AiMove } from '@/lib/ai-strategies';
 import ConfirmationDialog from './confirmation-dialog';
 import AiReviewModal from './ai-review-modal';
+import { useTranslations } from 'next-intl';
 
 
 const initialNodes: Node[] = [
@@ -47,6 +48,7 @@ let nodeIdCounter = 3;
 const getUniqueNodeId = (type: string) => `${type}-${nodeIdCounter++}`;
 
 function SessionWeaverFlow() {
+  const t = useTranslations('SessionWeaver');
   const [nodes, setNodes] = useState<Node<any>[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const [isGodMode, setGodMode] = useState(false);
@@ -93,8 +95,8 @@ function SessionWeaverFlow() {
       if (!node.data.name || !node.data.description) {
         toast({
           variant: 'destructive',
-          title: 'Incomplete Nodes',
-          description: `Please ensure all nodes have a name and a description before ending the turn. Node "${node.data.name || node.id}" is incomplete.`,
+          title: t('incompleteNodesTitle'),
+          description: t('incompleteNodesDescription', { nodeName: node.data.name || node.id }),
         });
         return;
       }
@@ -104,14 +106,14 @@ function SessionWeaverFlow() {
     const newNodes = nodes.filter(n => !nodesAtTurnStart.some(n_start => n_start.id === n.id));
     if (newNodes.length > 0) {
         const summary = newNodes.map(n => {
-            let nodeSummary = `a ${n.type} named '${n.data.name}'`;
+            let nodeSummary = t('logSummaryNodeType', { type: n.type, name: n.data.name });
             if (n.data.description) {
-                nodeSummary += ` with description: "${n.data.description.replace(/<[^>]+>/g, '')}"`;
+                nodeSummary += t('logSummaryDescription', { description: n.data.description.replace(/<[^>]+>/g, '') });
             }
             return nodeSummary;
-        }).join(' and ');
+        }).join(t('logSummaryJoin'));
         
-        const logSummary = `${activePlayer.name} added ${summary}.`;
+        const logSummary = t('logSummaryAction', { playerName: activePlayer.name, summary });
         
         const newLogEntry: LogEntry = {
             playerId: activePlayer.id,
@@ -124,7 +126,7 @@ function SessionWeaverFlow() {
         setHistoryLog(prev => [...prev, newLogEntry]);
 
         toast({
-            title: "Player Action Logged",
+            title: t('playerActionLoggedTitle'),
             description: logSummary,
         });
     }
@@ -138,16 +140,16 @@ function SessionWeaverFlow() {
 
     if (players[nextPlayerIndex]) {
         toast({
-            title: "Turn Ended",
-            description: `It's now ${players[nextPlayerIndex].name}'s turn.`,
+            title: t('turnEndedTitle'),
+            description: t('nextPlayerTurn', { playerName: players[nextPlayerIndex].name }),
         });
     } else {
          toast({
-            title: "Turn Ended",
-            description: "No other players. It's your turn again.",
+            title: t('turnEndedTitle'),
+            description: t('yourTurnAgain'),
         })
     }
-  }, [activePlayer, nodes, nodesAtTurnStart, players, activePlayerIndex, toast]);
+  }, [activePlayer, nodes, nodesAtTurnStart, players, activePlayerIndex, toast, t]);
 
   const handleAiTurn = useCallback(async () => {
     if (!activePlayer?.isAI || isAiTurn) return;
@@ -178,12 +180,12 @@ function SessionWeaverFlow() {
   
     } catch (error) {
       console.error("AI turn failed:", error);
-      toast({ variant: 'destructive', title: "AI Error", description: "The AI player failed to make a move." });
+      toast({ variant: 'destructive', title: t('aiErrorTitle'), description: t('aiFailedToMove') });
       handleEndTurn();
     } finally {
       // isAiTurn will be set to false when the review modal is closed or actioned.
     }
-  }, [activePlayer, isAiTurn, nodes, edges, historyLog, gameSeed, handleEndTurn, toast]);
+  }, [activePlayer, isAiTurn, nodes, edges, historyLog, gameSeed, handleEndTurn, toast, t]);
 
   const handleAcceptAiMove = (content: CritiqueAndRegenerateOutput) => {
     if (!aiMoveProposal) return;
@@ -369,8 +371,8 @@ function SessionWeaverFlow() {
     setNodes(nds => nds.filter(n => n.id !== nodeId));
     setEdges(eds => eds.filter(e => e.source !== nodeId && e.target !== nodeId));
     toast({
-      title: "Node Deleted",
-      description: "The selected node has been removed from the narrative.",
+      title: t('nodeDeletedTitle'),
+      description: t('nodeDeletedDescription'),
     });
   };
 
@@ -383,8 +385,8 @@ function SessionWeaverFlow() {
       return true;
     }));
     toast({
-        title: "Disconnected",
-        description: "The period connection has been removed.",
+        title: t('disconnectedTitle'),
+        description: t('disconnectedDescription'),
     });
   };
 
@@ -444,7 +446,7 @@ function SessionWeaverFlow() {
     setHistoryLog([]);
     setFocus('');
     nodeIdCounter = 3;
-    toast({ title: 'New Game Started', description: 'The timeline has been reset.' });
+    toast({ title: t('newGameTitle'), description: t('newGameDescription') });
     setNewGameConfirmOpen(false);
   };
   
@@ -473,10 +475,10 @@ function SessionWeaverFlow() {
       linkElement.setAttribute('href', dataUri);
       linkElement.setAttribute('download', exportFileDefaultName);
       linkElement.click();
-      toast({ title: 'Success', description: 'Game saved successfully.' });
+      toast({ title: t('saveSuccessTitle'), description: t('saveSuccessDescription') });
     } catch (error) {
       console.error('Error saving game:', error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Failed to save game.' });
+      toast({ variant: 'destructive', title: t('saveErrorTitle'), description: t('saveErrorDescription') });
     }
   };
 
@@ -505,10 +507,10 @@ function SessionWeaverFlow() {
         setFocus(saved.focus);
         nodeIdCounter = saved.nodeIdCounter;
 
-        toast({ title: 'Success', description: 'Game loaded successfully.' });
+        toast({ title: t('loadSuccessTitle'), description: t('loadSuccessDescription') });
       } catch (error) {
         console.error('Error loading game:', error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Failed to parse save file.' });
+        toast({ variant: 'destructive', title: t('loadErrorTitle'), description: t('loadErrorDescription') });
       }
     };
     reader.readAsText(file);
@@ -566,7 +568,7 @@ function SessionWeaverFlow() {
   return (
       <div className="w-full h-screen flex flex-col">
           <header className="p-4 border-b bg-card flex justify-between items-center shadow-sm z-10">
-              <h1 className="text-2xl font-headline text-foreground">Session Weaver</h1>
+              <h1 className="text-2xl font-headline text-foreground">{t('title')}</h1>
               <div className="flex items-center gap-4">
                   <Toolbar
                       onAddPeriod={() => addNode('period')}
@@ -630,9 +632,9 @@ function SessionWeaverFlow() {
                 isOpen={isNewGameConfirmOpen}
                 onClose={() => setNewGameConfirmOpen(false)}
                 onConfirm={handleNewGame}
-                title="Start a New Game?"
-                description="This will clear the current board and all progress. This action cannot be undone."
-                confirmText="Start New Game"
+                title={t('newGameConfirmTitle')}
+                description={t('newGameConfirmDescription')}
+                confirmText={t('newGameConfirmText')}
               />
               {aiMoveProposal && activePlayer?.isAI && (
                 <AiReviewModal

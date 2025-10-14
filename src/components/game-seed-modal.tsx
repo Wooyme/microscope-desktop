@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { X, PlusCircle } from 'lucide-react';
 import { Separator } from './ui/separator';
 import type { GameSeed } from '@/lib/types';
+import { useTranslations } from 'next-intl';
 
 type GameSeedModalProps = {
   isOpen: boolean;
@@ -18,6 +19,8 @@ type GameSeedModalProps = {
 };
 
 export default function GameSeedModal({ isOpen, onClose, gameSeed, setGameSeed }: GameSeedModalProps) {
+  const t = useTranslations('GameSeedModal');
+  const t_general = useTranslations('General');
   const [localGameSeed, setLocalGameSeed] = useState(gameSeed);
   const [newPaletteItem, setNewPaletteItem] = useState('');
   const [newBannedItem, setNewBannedItem] = useState('');
@@ -52,20 +55,20 @@ export default function GameSeedModal({ isOpen, onClose, gameSeed, setGameSeed }
     }}>
       <DialogContent className="sm:max-w-[600px] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="font-headline">Edit Game Seed</DialogTitle>
+          <DialogTitle className="font-headline">{t('title')}</DialogTitle>
           <DialogDescription>
-            Define the core concepts and constraints for your game session.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-grow overflow-y-auto px-1 space-y-6">
             <div>
-              <Label htmlFor="big-picture" className="text-lg font-semibold">The Big Picture</Label>
+              <Label htmlFor="big-picture" className="text-lg font-semibold">{t('bigPictureLabel')}</Label>
               <Textarea
                 id="big-picture"
                 value={localGameSeed.bigPicture}
                 onChange={(e) => setLocalGameSeed(prev => ({ ...prev, bigPicture: e.target.value }))}
-                placeholder="What is the central theme or conflict?"
+                placeholder={t('bigPicturePlaceholder')}
                 className="mt-2 h-24"
               />
             </div>
@@ -73,13 +76,13 @@ export default function GameSeedModal({ isOpen, onClose, gameSeed, setGameSeed }
             <Separator />
 
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Palette</h3>
-              <p className="text-sm text-muted-foreground">Add ingredients you want to see in the game.</p>
+              <h3 className="text-lg font-semibold">{t('paletteLabel')}</h3>
+              <p className="text-sm text-muted-foreground">{t('paletteDescription')}</p>
               <div className="flex gap-2">
                 <Input
                   value={newPaletteItem}
                   onChange={(e) => setNewPaletteItem(e.target.value)}
-                  placeholder="e.g., 'Cyberpunk aesthetics'"
+                  placeholder={t('palettePlaceholder')}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddItem(localGameSeed.palette, (list) => setLocalGameSeed(p => ({...p, palette: list})), newPaletteItem, setNewPaletteItem)}
                 />
                 <Button variant="ghost" size="icon" onClick={() => handleAddItem(localGameSeed.palette, (list) => setLocalGameSeed(p => ({...p, palette: list})), newPaletteItem, setNewPaletteItem)}>
@@ -101,13 +104,13 @@ export default function GameSeedModal({ isOpen, onClose, gameSeed, setGameSeed }
             <Separator />
             
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Banned Ingredients</h3>
-              <p className="text-sm text-muted-foreground">Add elements you want to avoid.</p>
+              <h3 className="text-lg font-semibold">{t('bannedLabel')}</h3>
+              <p className="text-sm text-muted-foreground">{t('bannedDescription')}</p>
               <div className="flex gap-2">
                 <Input
                   value={newBannedItem}
                   onChange={(e) => setNewBannedItem(e.target.value)}
-                  placeholder="e.g., 'Dragons'"
+                  placeholder={t('bannedPlaceholder')}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddItem(localGameSeed.banned, (list) => setLocalGameSeed(p => ({...p, banned: list})), newBannedItem, setNewBannedItem)}
                 />
                 <Button variant="ghost" size="icon" onClick={() => handleAddItem(localGameSeed.banned, (list) => setLocalGameSeed(p => ({...p, banned: list})), newBannedItem, setNewBannedItem)}>
@@ -128,8 +131,8 @@ export default function GameSeedModal({ isOpen, onClose, gameSeed, setGameSeed }
         </div>
 
         <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave}>Save Seed</Button>
+          <Button variant="outline" onClick={onClose}>{t_general('cancel')}</Button>
+          <Button onClick={handleSave}>{t('save')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

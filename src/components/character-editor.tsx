@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import { Bold, Italic, Underline, List, ListOrdered, Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 type CharacterEditorProps = {
   content: string;
@@ -15,6 +16,7 @@ type CharacterEditorProps = {
 
 // A very simple placeholder for a real rich text editor
 export default function CharacterEditor({ content, onUpdate, imageUrl, onImageUpdate }: CharacterEditorProps) {
+  const t = useTranslations('CharacterEditor');
   const [text, setText] = useState(content);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -62,14 +64,14 @@ export default function CharacterEditor({ content, onUpdate, imageUrl, onImageUp
         {onImageUpdate && (
             <div className="space-y-2">
                 <div className='flex justify-between items-center'>
-                    <h3 className="text-lg font-semibold">Banner Image</h3>
+                    <h3 className="text-lg font-semibold">{t('bannerImage')}</h3>
                     <div className='flex gap-2'>
                         <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                            <Upload className="mr-2 h-4 w-4" /> Upload
+                            <Upload className="mr-2 h-4 w-4" /> {t('upload')}
                         </Button>
                         {imageUrl && (
                             <Button variant="destructive" size="sm" onClick={handleRemoveImage}>
-                                <X className="mr-2 h-4 w-4" /> Remove
+                                <X className="mr-2 h-4 w-4" /> {t('remove')}
                             </Button>
                         )}
                         <input
@@ -83,7 +85,7 @@ export default function CharacterEditor({ content, onUpdate, imageUrl, onImageUp
                 </div>
                 {imageUrl && (
                   <div className="w-full aspect-video bg-muted rounded-md flex items-center justify-center overflow-hidden">
-                      <Image src={imageUrl} alt="Banner image" width={550} height={310} className="object-cover w-full h-full" />
+                      <Image src={imageUrl} alt={t('bannerImageAlt')} width={550} height={310} className="object-cover w-full h-full" />
                   </div>
                 )}
             </div>
@@ -97,7 +99,7 @@ export default function CharacterEditor({ content, onUpdate, imageUrl, onImageUp
                 "flex min-h-[200px] w-full rounded-b-md border-input bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
                 "border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             )}
-            placeholder="Type your scene details here..."
+            placeholder={t('placeholder')}
         />
         </div>
     </div>

@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from './ui/avatar';
 import { Player } from '@/lib/types';
 import { User } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 type SettingsPanelProps = {
   bigPicture: string;
@@ -18,6 +19,8 @@ type SettingsPanelProps = {
 };
 
 export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictureClick, activePlayer }: SettingsPanelProps) {
+  const t = useTranslations('SettingsPanel');
+  const t_general = useTranslations('General');
   const [isEditing, setIsEditing] = useState(false);
   const [localFocus, setLocalFocus] = useState(focus);
 
@@ -30,20 +33,20 @@ export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictur
     <div className="absolute top-4 left-4 z-10 w-80 space-y-2 rounded-lg">
        {activePlayer ? (
         <div>
-          <h3 className="text-xs uppercase text-muted-foreground font-semibold tracking-wider">Active Player</h3>
+          <h3 className="text-xs uppercase text-muted-foreground font-semibold tracking-wider">{t('activePlayer')}</h3>
           <div className="flex items-center gap-2 mt-1">
             <Avatar className="h-8 w-8">
               <AvatarFallback>{getInitials(activePlayer.name)}</AvatarFallback>
             </Avatar>
-            <span className="font-semibold text-foreground">{activePlayer.name}'s Turn</span>
+            <span className="font-semibold text-foreground">{t('playerTurn', { playerName: activePlayer.name })}</span>
           </div>
         </div>
       ) : (
         <div>
-          <h3 className="text-xs uppercase text-muted-foreground font-semibold tracking-wider">Active Player</h3>
+          <h3 className="text-xs uppercase text-muted-foreground font-semibold tracking-wider">{t('activePlayer')}</h3>
           <div className="flex items-center gap-2 mt-1 text-muted-foreground">
             <User className="h-5 w-5" />
-            <span>No active player</span>
+            <span>{t('noActivePlayer')}</span>
           </div>
         </div>
       )}
@@ -51,7 +54,7 @@ export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictur
       <Separator />
 
       <div>
-        <h3 className="text-xs uppercase text-muted-foreground font-semibold tracking-wider">Big Picture</h3>
+        <h3 className="text-xs uppercase text-muted-foreground font-semibold tracking-wider">{t('bigPicture')}</h3>
         <p
           className="text-sm text-foreground/80 whitespace-pre-wrap cursor-pointer hover:text-foreground"
           onClick={onBigPictureClick}
@@ -63,16 +66,16 @@ export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictur
       <Separator />
 
       <div>
-        <h3 className="text-xs uppercase text-muted-foreground font-semibold tracking-wider">Focus</h3>
+        <h3 className="text-xs uppercase text-muted-foreground font-semibold tracking-wider">{t('focus')}</h3>
         {isEditing ? (
           <div className="space-y-2">
             <Textarea
               value={localFocus}
               onChange={(e) => setLocalFocus(e.target.value)}
-              placeholder="What is the central theme of this session?"
+              placeholder={t('focusPlaceholder')}
               className="h-24 bg-background/80"
             />
-            <Button size="sm" onClick={handleSave}>Save</Button>
+            <Button size="sm" onClick={handleSave}>{t_general('save')}</Button>
           </div>
         ) : focus ? (
           <p
@@ -89,7 +92,7 @@ export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictur
             className="text-sm text-muted-foreground cursor-pointer hover:text-foreground"
             onClick={() => setIsEditing(true)}
           >
-            No focus set.
+            {t('noFocusSet')}
           </p>
         )}
       </div>

@@ -11,6 +11,7 @@ import type { Player, AiStrategy } from '@/lib/types';
 import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { useTranslations } from 'next-intl';
 
 type MultiplayerSettingsModalProps = {
   isOpen: boolean;
@@ -35,6 +36,8 @@ const aiPersonalities = ["Creative", "Logical", "Chaotic", "Historian", "Pragmat
 const aiStrategies: AiStrategy[] = ["Balanced", "Builder", "Detailer", "Focuser"];
 
 export default function MultiplayerSettingsModal({ isOpen, onClose, players, setPlayers }: MultiplayerSettingsModalProps) {
+  const t = useTranslations('MultiplayerSettingsModal');
+  const t_general = useTranslations('General');
   const [newPlayerName, setNewPlayerName] = useState('');
   const [selectedPersonality, setSelectedPersonality] = useState(aiPersonalities[0]);
   const [selectedStrategy, setSelectedStrategy] = useState<AiStrategy>(aiStrategies[0]);
@@ -52,7 +55,7 @@ export default function MultiplayerSettingsModal({ isOpen, onClose, players, set
 
   const handleAddAiPlayer = () => {
     const aiPlayersWithSamePersonality = players.filter(p => p.isAI && p.personality === selectedPersonality);
-    const newAiName = `${selectedPersonality} AI ${aiPlayersWithSamePersonality.length + 1}`;
+    const newAiName = `${t_general(selectedPersonality as any)} AI ${aiPlayersWithSamePersonality.length + 1}`;
     const newPlayer: Player = {
       id: getUniquePlayerId(),
       name: newAiName,
@@ -71,17 +74,17 @@ export default function MultiplayerSettingsModal({ isOpen, onClose, players, set
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">Multiplayer Settings</DialogTitle>
-          <DialogDescription>Manage the players in your session.</DialogDescription>
+          <DialogTitle className="font-headline">{t('title')}</DialogTitle>
+          <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
         
         <div className="py-4 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="new-player">Add Human Player</Label>
+            <Label htmlFor="new-player">{t('addHumanPlayer')}</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="new-player"
-                placeholder="New player name"
+                placeholder={t('newPlayerNamePlaceholder')}
                 value={newPlayerName}
                 onChange={(e) => setNewPlayerName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddPlayer()}
@@ -93,19 +96,19 @@ export default function MultiplayerSettingsModal({ isOpen, onClose, players, set
           </div>
           
           <div className="space-y-2">
-             <Label>Add AI Player</Label>
+             <Label>{t('addAiPlayer')}</Label>
              <div className="space-y-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="w-full justify-between">
-                            Personality: {selectedPersonality}
+                            {t('personality')}: {t_general(selectedPersonality as any)}
                             <ChevronDown />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
                         {aiPersonalities.map(p => (
                             <DropdownMenuItem key={p} onClick={() => setSelectedPersonality(p)}>
-                                {p}
+                                {t_general(p as any)}
                             </DropdownMenuItem>
                         ))}
                     </DropdownMenuContent>
@@ -113,27 +116,27 @@ export default function MultiplayerSettingsModal({ isOpen, onClose, players, set
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="w-full justify-between">
-                            Strategy: {selectedStrategy}
+                            {t('strategy')}: {t_general(selectedStrategy as any)}
                             <ChevronDown />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
                         {aiStrategies.map(s => (
                             <DropdownMenuItem key={s} onClick={() => setSelectedStrategy(s)}>
-                                {s}
+                                {t_general(s as any)}
                             </DropdownMenuItem>
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <Button onClick={handleAddAiPlayer} className="w-full">
-                    <Bot className="mr-2" /> Add AI Player
+                    <Bot className="mr-2" /> {t('addAiPlayer')}
                 </Button>
              </div>
           </div>
           
           <Separator />
 
-          <h4 className="font-medium">Current Players</h4>
+          <h4 className="font-medium">{t('currentPlayers')}</h4>
           <ScrollArea className="h-[200px] pr-4">
             <div className="space-y-3">
               {players.length > 0 ? (
@@ -147,7 +150,7 @@ export default function MultiplayerSettingsModal({ isOpen, onClose, players, set
                         <span className="font-medium text-secondary-foreground">{player.name}</span>
                         {player.isAI && <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Bot size={14} />
-                            <span>{player.personality} ({player.strategy})</span>
+                            <span>{t_general(player.personality as any)} ({t_general(player.strategy as any)})</span>
                         </div>}
                       </div>
                     </div>
@@ -164,7 +167,7 @@ export default function MultiplayerSettingsModal({ isOpen, onClose, players, set
               ) : (
                 <div className="text-center text-sm text-muted-foreground py-10">
                   <User className="mx-auto h-8 w-8 mb-2" />
-                  No players yet. Add one above!
+                  {t('noPlayers')}
                 </div>
               )}
             </div>
@@ -172,7 +175,7 @@ export default function MultiplayerSettingsModal({ isOpen, onClose, players, set
         </div>
 
         <DialogFooter>
-          <Button onClick={onClose}>Done</Button>
+          <Button onClick={onClose}>{t_general('done')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

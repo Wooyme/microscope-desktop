@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { Textarea } from '../ui/textarea';
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
+import { useTranslations } from 'next-intl';
 
 type SceneNodeData = {
   name: string;
@@ -21,6 +22,8 @@ type SceneNodeData = {
 }
 
 function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
+  const t = useTranslations('Nodes');
+  const t_general = useTranslations('General');
   const { name, description, imageUrl, updateNodeData, deleteNode } = data;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -51,14 +54,14 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
               <CardTitle className="text-lg font-headline flex items-center gap-2 absolute bottom-2 left-4 text-white">
                 <Camera className="w-5 h-5" />
-                Scene
+                {t('scene')}
               </CardTitle>
             </div>
           ) : (
             <div className="p-4 text-green-700">
               <CardTitle className="text-lg font-headline flex items-center gap-2">
                 <Camera className="w-5 h-5" />
-                Scene
+                {t('scene')}
               </CardTitle>
             </div>
           )}
@@ -70,13 +73,13 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
                 value={name}
                 onChange={onNameChange}
                 onClick={(e) => e.stopPropagation()}
-                placeholder="Scene Name"
+                placeholder={t('sceneNamePlaceholder')}
                 className="text-base font-semibold"
                 disabled={!isEditable}
               />
               <Textarea
                 value={description.replace(/<[^>]+>/g, '')}
-                placeholder="Click to add a description..."
+                placeholder={t('descriptionPlaceholder')}
                 className="text-sm"
                 readOnly
                 disabled={!isEditable}
@@ -90,7 +93,7 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
 
       <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Edit Scene: {name}</DialogTitle>
+          <DialogTitle>{t('editSceneTitle', { name })}</DialogTitle>
         </DialogHeader>
         <ScrollArea className="pr-4 flex-grow">
           <div className="py-4">
@@ -103,7 +106,7 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
           </div>
         </ScrollArea>
         <DialogFooter className="mt-auto pt-4">
-          <Button onClick={() => setIsModalOpen(false)}>Done</Button>
+          <Button onClick={() => setIsModalOpen(false)}>{t_general('done')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

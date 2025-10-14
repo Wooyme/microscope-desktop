@@ -1,10 +1,11 @@
-import { CalendarPlus, Milestone, Crown, FileDown, FileUp, Camera, Settings, Users, FilePlus } from 'lucide-react';
+import { CalendarPlus, Crown, FileDown, FileUp, Settings, Users, FilePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 type ToolbarProps = {
   onAddPeriod: () => void;
@@ -19,6 +20,7 @@ type ToolbarProps = {
 };
 
 export default function Toolbar({ onAddPeriod, onNewGameClick, onSaveClick, onLoad, isGodMode, setGodMode, onGameSeedClick, onMultiplayerClick, canCreateNode }: ToolbarProps) {
+  const t = useTranslations('Toolbar');
   const importInputRef = React.useRef<HTMLInputElement>(null);
 
   return (
@@ -31,7 +33,7 @@ export default function Toolbar({ onAddPeriod, onNewGameClick, onSaveClick, onLo
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>New Game</p>
+            <p>{t('newGame')}</p>
           </TooltipContent>
         </Tooltip>
         <Separator orientation="vertical" className="h-6" />
@@ -49,7 +51,7 @@ export default function Toolbar({ onAddPeriod, onNewGameClick, onSaveClick, onLo
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Load Game</p>
+            <p>{t('loadGame')}</p>
           </TooltipContent>
         </Tooltip>
         <Tooltip>
@@ -59,7 +61,7 @@ export default function Toolbar({ onAddPeriod, onNewGameClick, onSaveClick, onLo
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Save Game</p>
+            <p>{t('saveGame')}</p>
           </TooltipContent>
         </Tooltip>
         <Separator orientation="vertical" className="h-6" />
@@ -70,7 +72,7 @@ export default function Toolbar({ onAddPeriod, onNewGameClick, onSaveClick, onLo
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Add Period</p>
+            <p>{t('addPeriod')}</p>
           </TooltipContent>
         </Tooltip>
         <Separator orientation="vertical" className="h-6" />
@@ -81,7 +83,7 @@ export default function Toolbar({ onAddPeriod, onNewGameClick, onSaveClick, onLo
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Edit Game Seed</p>
+            <p>{t('editGameSeed')}</p>
           </TooltipContent>
         </Tooltip>
         <Tooltip>
@@ -91,7 +93,7 @@ export default function Toolbar({ onAddPeriod, onNewGameClick, onSaveClick, onLo
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Multiplayer Settings</p>
+            <p>{t('multiplayerSettings')}</p>
           </TooltipContent>
         </Tooltip>
         <Separator orientation="vertical" className="h-6" />
@@ -100,11 +102,11 @@ export default function Toolbar({ onAddPeriod, onNewGameClick, onSaveClick, onLo
             id="god-mode"
             checked={isGodMode}
             onCheckedChange={setGodMode}
-            aria-label="God Mode"
+            aria-label={t('godMode')}
           />
           <Label htmlFor="god-mode" className="flex items-center gap-2 cursor-pointer">
             <Crown size={16} className={isGodMode ? 'text-amber-400' : ''} />
-            <span className="text-sm">God Mode</span>
+            <span className="text-sm">{t('godMode')}</span>
           </Label>
         </div>
       </div>

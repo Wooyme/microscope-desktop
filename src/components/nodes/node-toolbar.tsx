@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ArrowLeftToLine, ArrowRightToLine, Milestone, Trash2, Unlink } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useTranslations } from 'next-intl';
 
 type NodeToolbarProps = {
   onAddLeft?: () => void;
@@ -11,9 +12,24 @@ type NodeToolbarProps = {
   onDisconnectLeft?: () => void;
   onDisconnectRight?: () => void;
   className?: string;
+  addLeftTooltip?: string;
+  addRightTooltip?: string;
+  addChildTooltip?: string;
 };
 
-export default function NodeToolbar({ onAddLeft, onAddRight, onDelete, onAddChild, onDisconnectLeft, onDisconnectRight, className }: NodeToolbarProps) {
+export default function NodeToolbar({ 
+    onAddLeft, 
+    onAddRight, 
+    onDelete, 
+    onAddChild, 
+    onDisconnectLeft, 
+    onDisconnectRight, 
+    className,
+    addLeftTooltip,
+    addRightTooltip,
+    addChildTooltip,
+}: NodeToolbarProps) {
+  const t = useTranslations('NodeToolbar');
   return (
     <TooltipProvider>
       <div className={cn("absolute -top-12 left-1/2 -translate-x-1/2 flex items-center gap-1 p-1 bg-card border rounded-md shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200", className)}>
@@ -24,7 +40,7 @@ export default function NodeToolbar({ onAddLeft, onAddRight, onDelete, onAddChil
                 <ArrowLeftToLine className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Add Period Before</TooltipContent>
+            <TooltipContent>{addLeftTooltip || t('addPeriodBefore')}</TooltipContent>
           </Tooltip>
         )}
         {onDisconnectLeft && (
@@ -34,7 +50,7 @@ export default function NodeToolbar({ onAddLeft, onAddRight, onDelete, onAddChil
                         <Unlink className="w-4 h-4" />
                     </Button>
                 </TooltipTrigger>
-                <TooltipContent>Disconnect Left</TooltipContent>
+                <TooltipContent>{t('disconnectLeft')}</TooltipContent>
             </Tooltip>
         )}
         {onDelete && (
@@ -44,7 +60,7 @@ export default function NodeToolbar({ onAddLeft, onAddRight, onDelete, onAddChil
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Delete Node</TooltipContent>
+              <TooltipContent>{t('deleteNode')}</TooltipContent>
             </Tooltip>
         )}
         {onAddChild && (
@@ -54,7 +70,7 @@ export default function NodeToolbar({ onAddLeft, onAddRight, onDelete, onAddChil
                 <Milestone className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Add Event</TooltipContent>
+            <TooltipContent>{addChildTooltip || t('addEvent')}</TooltipContent>
           </Tooltip>
         )}
         {onAddRight && (
@@ -64,7 +80,7 @@ export default function NodeToolbar({ onAddLeft, onAddRight, onDelete, onAddChil
                 <ArrowRightToLine className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Add Period After</TooltipContent>
+            <TooltipContent>{addRightTooltip || t('addPeriodAfter')}</TooltipContent>
           </Tooltip>
         )}
         {onDisconnectRight && (
@@ -74,7 +90,7 @@ export default function NodeToolbar({ onAddLeft, onAddRight, onDelete, onAddChil
                         <Unlink className="w-4 h-4 transform scale-x-[-1]" />
                     </Button>
                 </TooltipTrigger>
-                <TooltipContent>Disconnect Right</TooltipContent>
+                <TooltipContent>{t('disconnectRight')}</TooltipContent>
             </Tooltip>
         )}
       </div>

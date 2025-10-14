@@ -1,9 +1,5 @@
-import SessionWeaver from '@/components/session-weaver';
+import { redirect } from 'next/navigation';
 
-export default function Home() {
-  return (
-    <main className="min-h-screen bg-background text-foreground">
-      <SessionWeaver />
-    </main>
-  );
+export default function RootPage() {
+  redirect('/en');
 }

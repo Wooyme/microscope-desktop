@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { buttonVariants } from './ui/button';
+import { useTranslations } from 'next-intl';
 
 type ConfirmationDialogProps = {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export default function ConfirmationDialog({
   description,
   confirmText = 'Confirm',
 }: ConfirmationDialogProps) {
+  const t = useTranslations('General');
   return (
     <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <AlertDialogContent>
@@ -39,7 +41,7 @@ export default function ConfirmationDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={onClose}>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className={buttonVariants({ variant: 'destructive' })}

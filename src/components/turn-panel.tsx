@@ -8,6 +8,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
   } from "@/components/ui/tooltip"
+import { useTranslations } from 'next-intl';
 
 type TurnPanelProps = {
   onEndTurn: () => void;
@@ -18,23 +19,24 @@ type TurnPanelProps = {
 };
 
 export default function TurnPanel({ onEndTurn, nodesCreatedThisTurn, maxNodesPerTurn, isAiTurn, isPlayerTurn }: TurnPanelProps) {
+  const t = useTranslations('TurnPanel');
   return (
     <div className="absolute bottom-4 right-4 z-10 p-2 bg-card/80 rounded-lg shadow-lg border border-border flex items-center gap-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {isPlayerTurn && <span>Nodes Created: {nodesCreatedThisTurn}/{maxNodesPerTurn}</span>}
+            {isPlayerTurn && <span>{t('nodesCreated', { count: nodesCreatedThisTurn, max: maxNodesPerTurn })}</span>}
         </div>
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div>
                         <Button onClick={onEndTurn} disabled={isAiTurn || !isPlayerTurn}>
-                            {isAiTurn ? "AI is thinking..." : "End Turn"}
+                            {isAiTurn ? t('aiThinking') : t('endTurn')}
                             {!isAiTurn && <ArrowRight className="ml-2" />}
                         </Button>
                     </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                    <p>Pass the turn to the next player</p>
+                    <p>{t('endTurnTooltip')}</p>
                 </TooltipContent>
             </Tooltip>
         </TooltipProvider>
