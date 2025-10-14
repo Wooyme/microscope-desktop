@@ -10,11 +10,13 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import type { GameSeed } from '@/lib/types';
+import { getMessages } from 'next-intl/server';
 
 const GenerateNodeContentInputSchema = z.object({
     gameSeed: z.custom<GameSeed>(),
     personality: z.string(),
     nodeType: z.enum(['period', 'event', 'scene']),
+    locale: z.string(),
     parentContext: z.object({
         name: z.string(),
         description: z.string(),
@@ -22,14 +24,21 @@ const GenerateNodeContentInputSchema = z.object({
 });
 type GenerateNodeContentInput = z.infer<typeof GenerateNodeContentInputSchema>;
 
-const GenerateNodeContentOutputSchema = z.object({
-  name: z.string().describe('The creative name for the new node.'),
-  description: z.string().describe('The creative description for the new node.'),
-});
-export type GenerateNodeContentOutput = z.infer<typeof GenerateNodeContentOutputSchema>;
+export type GenerateNodeContentOutput = {
+  name: string;
+  description: string;
+};
 
 
 export async function generateNodeContent(input: GenerateNodeContentInput): Promise<GenerateNodeContentOutput> {
+  const { locale } = input;
+  const messages = await getMessages({locale});
+  const t = (key: string) => messages.SuggestNextMoveFlow[key] as string;
+
+  const GenerateNodeContentOutputSchema = z.object({
+    name: z.string().describe(t('outputNameDescription')),
+    description: z.string().describe(t('outputDescriptionDescription')),
+  });
   
   const generateContentFlow = ai.defineFlow(
     {
@@ -37,33 +46,29 @@ export async function generateNodeContent(input: GenerateNodeContentInput): Prom
       inputSchema: GenerateNodeContentInputSchema,
       outputSchema: GenerateNodeContentOutputSchema,
     },
-    async (input) => {
-        const { gameSeed, personality, nodeType, parentContext } = input;
+    async (flowInput) => {
+        const { gameSeed, personality, nodeType, parentContext } = flowInput;
         
         const parentInfo = parentContext 
-            ? `It should be a child of "${parentContext.name}" which is about: "${parentContext.description}".`
-            : "This is the very first entry in the timeline.";
+            ? t('parentInfo').replace('{{parentName}}', parentContext.name).replace('{{parentDescription}}', parentContext.description)
+            : t('noParentInfo');
+
+        const promptText = t('prompt')
+            .replace('{{personality}}', personality)
+            .replace('{{nodeType}}', nodeType)
+            .replace('{{bigPicture}}', gameSeed.bigPicture)
+            .replace('{{palette}}', gameSeed.palette.join(', '))
+            .replace('{{banned}}', gameSeed.banned.join(', '))
+            .replace('{{parentInfo}}', parentInfo);
 
         const prompt = ai.definePrompt({
             name: 'generateNodeContentPrompt',
             input: { schema: GenerateNodeContentInputSchema },
             output: { schema: GenerateNodeContentOutputSchema },
-            prompt: `You are an AI player with a "${personality}" personality in a collaborative storytelling game.
-            Your task is to invent a creative name and a compelling description for a new ${nodeType}.
-            
-            The overall story guidelines are:
-            BIG PICTURE: ${gameSeed.bigPicture}
-            PALETTE (things to include): ${gameSeed.palette.join(', ')}
-            BANNED (things to avoid): ${gameSeed.banned.join(', ')}
-
-            The new ${nodeType} you are creating should fit into the timeline. ${parentInfo}
-
-            Be creative and embody your "${personality}" personality in the content you create.
-            Return your response in the specified JSON format with a 'name' and a 'description'.
-            `,
+            prompt: promptText,
         });
 
-      const { output } = await prompt(input);
+      const { output } = await prompt(flowInput);
       return output!;
     }
   );

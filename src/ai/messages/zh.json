@@ -1,0 +1,15 @@
+
+{
+    "CritiqueAndRegenerateFlow": {
+        "outputNameDescription": "为节点再生的创意名称。",
+        "outputDescriptionDescription": "为节点再生的创意描述。",
+        "prompt": "你是一个在合作讲故事游戏中的AI玩家，拥有“{{personality}}”的个性。\n你之前建议了一个名为“{{originalName}}”，描述为“{{originalDescription}}”的新{{nodeType}}。\n\n用户对你的建议提出了以下反馈：\n“{{feedback}}”\n\n你的任务是根据这个反馈重新生成该{{nodeType}}的名称和描述。\n在你创作的新内容中体现你的“{{personality}}”个性。\n以指定的JSON格式返回你的回应，包含新的'name'和'description'。\n不要重复原始建议。在你的修订中要有创意和思考。"
+    },
+    "SuggestNextMoveFlow": {
+        "outputNameDescription": "为新节点设计的创意名称。",
+        "outputDescriptionDescription": "为新节点设计的创意描述。",
+        "parentInfo": "它应该是“{{parentName}}”的子节点，其内容关于：“{{parentDescription}}”。",
+        "noParentInfo": "这是时间线上的第一个条目。",
+        "prompt": "你是一个在合作讲故事游戏中的AI玩家，拥有“{{personality}}”的个性。\n你的任务是为一个新的{{nodeType}}创造一个有创意的名称和引人入胜的描述。\n\n整体故事的指导方针是：\n宏大叙事：{{bigPicture}}\n调色板（包含的事物）：{{palette}}\n禁止（避免的事物）：{{banned}}\n\n你正在创建的新{{nodeType}}应该融入时间线。{{parentInfo}}\n\n在创作的内容中要有创意并体现你的“{{personality}}”个性。\n以指定的JSON格式返回你的回应，包含一个'name'和一个'description'。"
+    }
+}

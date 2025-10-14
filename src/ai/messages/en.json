@@ -1,0 +1,15 @@
+
+{
+    "CritiqueAndRegenerateFlow": {
+        "outputNameDescription": "The regenerated creative name for the node.",
+        "outputDescriptionDescription": "The regenerated creative description for the node.",
+        "prompt": "You are an AI player with a \"{{personality}}\" personality in a collaborative storytelling game.\nYou previously suggested a new {{nodeType}} with the name \"{{originalName}}\" and description \"{{originalDescription}}\".\n\nThe user has provided the following feedback on your suggestion:\n\"{{feedback}}\"\n\nYour task is to regenerate the name and description for the {{nodeType}}, taking this feedback into account.\nEmbody your \"{{personality}}\" personality in the new content you create.\nReturn your response in the specified JSON format with a new 'name' and 'description'.\nDo not repeat the original suggestion. Be creative and thoughtful in your revision."
+    },
+    "SuggestNextMoveFlow": {
+        "outputNameDescription": "The creative name for the new node.",
+        "outputDescriptionDescription": "The creative description for the new node.",
+        "parentInfo": "It should be a child of \"{{parentName}}\" which is about: \"{{parentDescription}}\".",
+        "noParentInfo": "This is the very first entry in the timeline.",
+        "prompt": "You are an AI player with a \"{{personality}}\" personality in a collaborative storytelling game.\nYour task is to invent a creative name and a compelling description for a new {{nodeType}}.\n\nThe overall story guidelines are:\nBIG PICTURE: {{bigPicture}}\nPALETTE (things to include): {{palette}}\nBANNED (things to avoid): {{banned}}\n\nThe new {{nodeType}} you are creating should fit into the timeline. {{parentInfo}}\n\nBe creative and embody your \"{{personality}}\" personality in the content you create.\nReturn your response in the specified JSON format with a 'name' and a 'description'."
+    }
+}

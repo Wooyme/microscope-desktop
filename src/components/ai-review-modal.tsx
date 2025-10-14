@@ -16,7 +16,7 @@ import { Loader2 } from 'lucide-react';
 import { critiqueAndRegenerate } from '@/ai/flows/critique-and-regenerate';
 import { useToast } from '@/hooks/use-toast';
 import type { CritiqueAndRegenerateOutput } from '@/lib/types';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 type AiReviewModalProps = {
   isOpen: boolean;
@@ -41,6 +41,7 @@ export default function AiReviewModal({
 }: AiReviewModalProps) {
   const t = useTranslations('AiReviewModal');
   const t_general = useTranslations('General');
+  const locale = useLocale();
   const [currentProposal, setCurrentProposal] = useState<CritiqueAndRegenerateOutput | null>(null);
   const [feedback, setFeedback] = useState('');
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -66,6 +67,7 @@ export default function AiReviewModal({
         originalName: currentProposal.name,
         originalDescription: currentProposal.description,
         feedback: feedback,
+        locale: locale,
       });
       setCurrentProposal(newContent);
       setFeedback('');

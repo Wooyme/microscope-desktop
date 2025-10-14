@@ -34,7 +34,7 @@ import TurnPanel from './turn-panel';
 import { determineAiMove, AiMove } from '@/lib/ai-strategies';
 import ConfirmationDialog from './confirmation-dialog';
 import AiReviewModal from './ai-review-modal';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 
 const initialNodes: Node[] = [
@@ -49,6 +49,7 @@ const getUniqueNodeId = (type: string) => `${type}-${nodeIdCounter++}`;
 
 function SessionWeaverFlow() {
   const t = useTranslations('SessionWeaver');
+  const locale = useLocale();
   const [nodes, setNodes] = useState<Node<any>[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const [isGodMode, setGodMode] = useState(false);
@@ -168,6 +169,7 @@ function SessionWeaverFlow() {
         gameSeed: gameSeed,
         personality: activePlayer.personality || 'Neutral',
         nodeType: move.type as 'period' | 'event' | 'scene',
+        locale: locale,
         parentContext: parentNode ? { name: parentNode.data.name, description: parentNode.data.description } : undefined,
       });
 
@@ -185,7 +187,7 @@ function SessionWeaverFlow() {
     } finally {
       // isAiTurn will be set to false when the review modal is closed or actioned.
     }
-  }, [activePlayer, isAiTurn, nodes, edges, historyLog, gameSeed, handleEndTurn, toast, t]);
+  }, [activePlayer, isAiTurn, nodes, edges, historyLog, gameSeed, handleEndTurn, toast, t, locale]);
 
   const handleAcceptAiMove = (content: CritiqueAndRegenerateOutput) => {
     if (!aiMoveProposal) return;
