@@ -139,5 +139,25 @@
     "aiThinking": "AI is thinking...",
     "endTurn": "End Turn",
     "endTurnTooltip": "Pass the turn to the next player"
+  },
+  "InitialGame": {
+    "bookendStartName": "Bookend: The Beginning",
+    "bookendStartDescription": "The start of our history.",
+    "bookendEndName": "Bookend: The End",
+    "bookendEndDescription": "The conclusion of our history.",
+    "gameSeed": {
+      "bigPicture": "A grand space opera about the last remnants of humanity searching for a new home.",
+      "palette": [
+        "Ancient alien artifacts",
+        "Political intrigue",
+        "FTL travel consequences"
+      ],
+      "banned": [
+        "Magic",
+        "Time travel"
+      ]
+    },
+    "player1Name": "Alex",
+    "player2Name": "Creative AI"
   }
 }

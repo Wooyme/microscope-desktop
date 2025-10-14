@@ -37,34 +37,46 @@ import AiReviewModal from './ai-review-modal';
 import { useLocale, useTranslations } from 'next-intl';
 
 
-const initialNodes: Node[] = [
-  { id: 'period-1', type: 'period', position: { x: 100, y: 100 }, data: { name: 'Bookend: The Beginning', description: 'The start of our history.' } },
-  { id: 'period-2', type: 'period', position: { x: 800, y: 100 }, data: { name: 'Bookend: The End', description: 'The conclusion of our history.' } },
-];
-
-const initialEdges: Edge[] = [];
-
 let nodeIdCounter = 3;
 const getUniqueNodeId = (type: string) => `${type}-${nodeIdCounter++}`;
 
 function SessionWeaverFlow() {
   const t = useTranslations('SessionWeaver');
+  const t_initial = useTranslations('InitialGame');
   const locale = useLocale();
+
+  const initialNodes: Node[] = useMemo(() => [
+    { id: 'period-1', type: 'period', position: { x: 100, y: 100 }, data: { name: t_initial('bookendStartName'), description: t_initial('bookendStartDescription') } },
+    { id: 'period-2', type: 'period', position: { x: 800, y: 100 }, data: { name: t_initial('bookendEndName'), description: t_initial('bookendEndDescription') } },
+  ], [t_initial]);
+  
+  const initialGameSeed: GameSeed = useMemo(() => ({
+    bigPicture: t_initial('gameSeed.bigPicture'),
+    palette: [
+      t_initial('gameSeed.palette.0'),
+      t_initial('gameSeed.palette.1'),
+      t_initial('gameSeed.palette.2')
+    ],
+    banned: [
+      t_initial('gameSeed.banned.0'),
+      t_initial('gameSeed.banned.1')
+    ]
+  }), [t_initial]);
+
+  const initialPlayers: Player[] = useMemo(() => [
+    { id: 'player-1', name: t_initial('player1Name') },
+    { id: 'player-2', name: t_initial('player2Name'), isAI: true, personality: 'Creative', strategy: 'Detailer' },
+  ], [t_initial]);
+
+
   const [nodes, setNodes] = useState<Node<any>[]>(initialNodes);
-  const [edges, setEdges] = useState<Edge[]>(initialEdges);
+  const [edges, setEdges] = useState<Edge[]>([]);
   const [isGodMode, setGodMode] = useState(false);
   const [isAiTurn, setIsAiTurn] = useState(false);
   const [focus, setFocus] = useState('');
   const [isGameSeedModalOpen, setGameSeedModalOpen] = useState(false);
-  const [gameSeed, setGameSeed] = useState<GameSeed>({
-    bigPicture: 'A grand space opera about the last remnants of humanity searching for a new home.',
-    palette: ['Ancient alien artifacts', 'Political intrigue', 'FTL travel consequences'],
-    banned: ['Magic', 'Time travel']
-  });
-  const [players, setPlayers] = useState<Player[]>([
-    { id: 'player-1', name: 'Alex' },
-    { id: 'player-2', name: 'Creative AI', isAI: true, personality: 'Creative', strategy: 'Detailer' },
-  ]);
+  const [gameSeed, setGameSeed] = useState<GameSeed>(initialGameSeed);
+  const [players, setPlayers] = useState<Player[]>(initialPlayers);
   const [isMultiplayerModalOpen, setMultiplayerModalOpen] = useState(false);
   const [activePlayerIndex, setActivePlayerIndex] = useState(0);
   const [nodesCreatedThisTurn, setNodesCreatedThisTurn] = useState(0);
@@ -431,16 +443,9 @@ function SessionWeaverFlow() {
 
   const handleNewGame = () => {
     setNodes(initialNodes);
-    setEdges(initialEdges);
-    setGameSeed({
-      bigPicture: 'A grand space opera about the last remnants of humanity searching for a new home.',
-      palette: ['Ancient alien artifacts', 'Political intrigue', 'FTL travel consequences'],
-      banned: ['Magic', 'Time travel']
-    });
-    setPlayers([
-      { id: 'player-1', name: 'Alex' },
-      { id: 'player-2', name: 'Creative AI', isAI: true, personality: 'Creative', strategy: 'Detailer' },
-    ]);
+    setEdges([]);
+    setGameSeed(initialGameSeed);
+    setPlayers(initialPlayers);
     setActivePlayerIndex(0);
     setNodesCreatedThisTurn(0);
     setFirstNodeThisTurnId(null);

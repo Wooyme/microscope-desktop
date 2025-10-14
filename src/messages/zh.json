@@ -1,3 +1,4 @@
+
 {
   "SessionWeaver": {
     "title": "剧本编织者",
@@ -139,5 +140,25 @@
     "aiThinking": "AI 正在思考...",
     "endTurn": "结束回合",
     "endTurnTooltip": "将回合交给下一位玩家"
+  },
+  "InitialGame": {
+    "bookendStartName": "书挡：开端",
+    "bookendStartDescription": "我们历史的起点。",
+    "bookendEndName": "书挡：终局",
+    "bookendEndDescription": "我们历史的终点。",
+    "gameSeed": {
+      "bigPicture": "一部关于人类最后残余寻找新家园的宏大太空歌剧。",
+      "palette": [
+        "远古外星神器",
+        "政治阴谋",
+        "超光速旅行的后果"
+      ],
+      "banned": [
+        "魔法",
+        "时间旅行"
+      ]
+    },
+    "player1Name": "亚历克斯",
+    "player2Name": "创造型AI"
   }
 }
