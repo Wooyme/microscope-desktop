@@ -25,10 +25,9 @@ import EventNode from '@/components/nodes/event-node';
 import SceneNode from '@/components/nodes/scene-node';
 import Toolbar from '@/components/toolbar';
 import { generateNodeContent } from '@/ai/flows/suggest-next-move';
-import { critiqueAndRegenerate } from '@/ai/flows/critique-and-regenerate';
-import type { CritiqueAndRegenerateOutput } from '@/ai/flows/critique-and-regenerate';
+import type { CritiqueAndRegenerateOutput } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import type { Period, Event, Scene, History, GameSeed, Player, LogEntry, AiStrategy, SaveFile } from '@/lib/types';
+import type { GameSeed, Player, LogEntry, AiStrategy, SaveFile } from '@/lib/types';
 import SettingsPanel from './settings-panel';
 import GameSeedModal from './game-seed-modal';
 import MultiplayerSettingsModal from './multiplayer-settings-modal';
@@ -566,6 +565,7 @@ function SessionWeaverFlow() {
               <h1 className="text-2xl font-headline text-foreground">Session Weaver</h1>
               <div className="flex items-center gap-4">
                   <Toolbar
+                      onAddPeriod={() => addNode('period')}
                       onNewGameClick={() => setNewGameConfirmOpen(true)}
                       onSaveClick={saveGame}
                       onLoad={loadGame}

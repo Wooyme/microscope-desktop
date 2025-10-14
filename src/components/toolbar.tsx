@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import React from 'react';
 
 type ToolbarProps = {
+  onAddPeriod: () => void;
   onNewGameClick: () => void;
   onSaveClick: () => void;
   onLoad: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -17,7 +18,7 @@ type ToolbarProps = {
   canCreateNode: boolean;
 };
 
-export default function Toolbar({ onNewGameClick, onSaveClick, onLoad, isGodMode, setGodMode, onGameSeedClick, onMultiplayerClick, canCreateNode }: ToolbarProps) {
+export default function Toolbar({ onAddPeriod, onNewGameClick, onSaveClick, onLoad, isGodMode, setGodMode, onGameSeedClick, onMultiplayerClick, canCreateNode }: ToolbarProps) {
   const importInputRef = React.useRef<HTMLInputElement>(null);
 
   return (
@@ -59,6 +60,17 @@ export default function Toolbar({ onNewGameClick, onSaveClick, onLoad, isGodMode
           </TooltipTrigger>
           <TooltipContent>
             <p>Save Game</p>
+          </TooltipContent>
+        </Tooltip>
+        <Separator orientation="vertical" className="h-6" />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" onClick={onAddPeriod} disabled={!canCreateNode}>
+              <CalendarPlus />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Add Period</p>
           </TooltipContent>
         </Tooltip>
         <Separator orientation="vertical" className="h-6" />
