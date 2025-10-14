@@ -25,7 +25,8 @@ import EventNode from '@/components/nodes/event-node';
 import SceneNode from '@/components/nodes/scene-node';
 import Toolbar from '@/components/toolbar';
 import { generateNodeContent } from '@/ai/flows/suggest-next-move';
-import { critiqueAndRegenerate, CritiqueAndRegenerateOutput } from '@/ai/flows/critique-and-regenerate';
+import { critiqueAndRegenerate } from '@/ai/flows/critique-and-regenerate';
+import type { CritiqueAndRegenerateOutput } from '@/ai/flows/critique-and-regenerate';
 import { useToast } from '@/hooks/use-toast';
 import type { Period, Event, Scene, History, GameSeed, Player, LogEntry, AiStrategy, SaveFile } from '@/lib/types';
 import SettingsPanel from './settings-panel';
@@ -193,17 +194,17 @@ function SessionWeaverFlow() {
     try {
       const newContent = await critiqueAndRegenerate({
         personality: activePlayer.personality || 'Neutral',
-        nodeType: aiMoveProposal.move.type,
+        nodeType: aiMoveProposal.move.type as 'period' | 'event' | 'scene',
         originalName: aiMoveProposal.content.name,
         originalDescription: aiMoveProposal.content.description,
         feedback: feedback,
       });
       setAiMoveProposal(prev => prev ? { ...prev, content: newContent } : null);
+      setIsAiTurn(false); // Hide thinking state only after success
     } catch (error) {
       console.error("AI regeneration failed:", error);
       toast({ variant: 'destructive', title: "AI Error", description: "Failed to regenerate content." });
-    } finally {
-      setIsAiTurn(false); // Hide thinking state
+      setIsAiTurn(false); // Also hide on error
     }
   };
 
@@ -671,3 +672,5 @@ export default function SessionWeaver() {
         </ReactFlowProvider>
     )
 }
+
+    
