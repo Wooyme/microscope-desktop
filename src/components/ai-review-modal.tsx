@@ -43,6 +43,8 @@ export default function AiReviewModal({
     }
   };
 
+  const showLoading = isRegenerating || !proposal;
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
       <DialogContent className="sm:max-w-[500px]">
@@ -54,8 +56,8 @@ export default function AiReviewModal({
         </DialogHeader>
 
         <div className="py-4 space-y-4">
-          {isRegenerating && !proposal ? (
-            <div className="flex items-center justify-center h-24">
+          {showLoading ? (
+            <div className="flex items-center justify-center h-48">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
@@ -95,7 +97,7 @@ export default function AiReviewModal({
             {isRegenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Regenerate
           </Button>
-          <Button onClick={onAccept} disabled={isRegenerating}>
+          <Button onClick={onAccept} disabled={isRegenerating || !proposal}>
             Accept
           </Button>
         </DialogFooter>
