@@ -74,6 +74,7 @@ export type SaveFile = {
     nodesAtTurnStart: Node[];
     historyLog: LogEntry[];
     focus: string;
+    legacies: string[];
     nodeIdCounter: number;
 }
 

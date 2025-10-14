@@ -74,6 +74,7 @@ function SessionWeaverFlow() {
   const [isGodMode, setGodMode] = useState(false);
   const [isAiTurn, setIsAiTurn] = useState(false);
   const [focus, setFocus] = useState('');
+  const [legacies, setLegacies] = useState<string[]>(['The Empire\'s Fall']);
   const [isGameSeedModalOpen, setGameSeedModalOpen] = useState(false);
   const [gameSeed, setGameSeed] = useState<GameSeed>(initialGameSeed);
   const [players, setPlayers] = useState<Player[]>(initialPlayers);
@@ -452,6 +453,7 @@ function SessionWeaverFlow() {
     setNodesAtTurnStart(initialNodes);
     setHistoryLog([]);
     setFocus('');
+    setLegacies(['The Empire\'s Fall']);
     nodeIdCounter = 3;
     toast({ title: t('newGameTitle'), description: t('newGameDescription') });
     setNewGameConfirmOpen(false);
@@ -470,6 +472,7 @@ function SessionWeaverFlow() {
         nodesAtTurnStart,
         historyLog,
         focus,
+        legacies,
         nodeIdCounter,
       };
 
@@ -512,6 +515,7 @@ function SessionWeaverFlow() {
         setNodesAtTurnStart(saved.nodesAtTurnStart);
         setHistoryLog(saved.historyLog);
         setFocus(saved.focus);
+        setLegacies(saved.legacies || []);
         nodeIdCounter = saved.nodeIdCounter;
 
         toast({ title: t('loadSuccessTitle'), description: t('loadSuccessDescription') });
@@ -611,6 +615,7 @@ function SessionWeaverFlow() {
                         setFocus={setFocus}
                         onBigPictureClick={() => setGameSeedModalOpen(true)}
                         activePlayer={activePlayer}
+                        legacies={legacies}
                       />
                       <TurnPanel
                         onEndTurn={handleEndTurn}

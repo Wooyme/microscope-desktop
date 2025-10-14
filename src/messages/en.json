@@ -116,6 +116,10 @@
     "addPeriodAfter": "Add Period After",
     "disconnectRight": "Disconnect Right"
   },
+  "LegacyPanel": {
+    "title": "Legacies",
+    "noLegacies": "No legacies established yet."
+  },
   "SettingsPanel": {
     "activePlayer": "Active Player",
     "playerTurn": "{playerName}'s Turn",

@@ -1,4 +1,3 @@
-
 {
   "SessionWeaver": {
     "title": "剧本编织者",
@@ -116,6 +115,10 @@
     "addEvent": "添加事件",
     "addPeriodAfter": "在后面添加时代",
     "disconnectRight": "断开右侧连接"
+  },
+  "LegacyPanel": {
+    "title": "遗产",
+    "noLegacies": "尚未建立任何遗产。"
   },
   "SettingsPanel": {
     "activePlayer": "当前玩家",

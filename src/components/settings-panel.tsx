@@ -9,6 +9,7 @@ import { Player } from '@/lib/types';
 import { User } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
+import LegacyPanel from './legacy-panel';
 
 type SettingsPanelProps = {
   bigPicture: string;
@@ -16,9 +17,10 @@ type SettingsPanelProps = {
   setFocus: (focus: string) => void;
   onBigPictureClick: () => void;
   activePlayer: Player | undefined;
+  legacies: string[];
 };
 
-export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictureClick, activePlayer }: SettingsPanelProps) {
+export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictureClick, activePlayer, legacies }: SettingsPanelProps) {
   const t = useTranslations('SettingsPanel');
   const t_general = useTranslations('General');
   const [isEditing, setIsEditing] = useState(false);
@@ -30,7 +32,7 @@ export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictur
   };
 
   return (
-    <div className="absolute top-4 left-4 z-10 w-80 space-y-2 rounded-lg">
+    <div className="absolute top-4 left-4 z-10 w-80 space-y-2 rounded-lg bg-card/80 p-4 shadow-lg border border-border">
        {activePlayer ? (
         <div>
           <h3 className="text-xs uppercase text-muted-foreground font-semibold tracking-wider">{t('activePlayer')}</h3>
@@ -96,6 +98,11 @@ export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictur
           </p>
         )}
       </div>
+
+      <Separator />
+
+      <LegacyPanel legacies={legacies} />
+
     </div>
   );
 }
