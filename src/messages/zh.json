@@ -81,6 +81,11 @@
     "bannedPlaceholder": "例如，“龙”",
     "save": "保存种子"
   },
+   "LegacyEditorModal": {
+    "title": "编辑遗产",
+    "description": "遗产是游戏中涌现的主题和结果。随着故事的演变，添加或删除它们。",
+    "newLegacyPlaceholder": "添加一个新的遗产"
+  },
   "MultiplayerSettingsModal": {
     "title": "多人游戏设置",
     "description": "管理会话中的玩家。",
@@ -162,6 +167,7 @@
       ]
     },
     "player1Name": "亚历克斯",
-    "player2Name": "创造型AI"
+    "player2Name": "创造型AI",
+    "initialLegacy": "帝国的陨落"
   }
 }

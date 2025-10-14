@@ -81,6 +81,11 @@
     "bannedPlaceholder": "e.g., 'Dragons'",
     "save": "Save Seed"
   },
+  "LegacyEditorModal": {
+    "title": "Edit Legacies",
+    "description": "Legacies are themes and outcomes that emerge from your game. Add or remove them as your story evolves.",
+    "newLegacyPlaceholder": "Add a new Legacy"
+  },
   "MultiplayerSettingsModal": {
     "title": "Multiplayer Settings",
     "description": "Manage the players in your session.",
@@ -162,6 +167,7 @@
       ]
     },
     "player1Name": "Alex",
-    "player2Name": "Creative AI"
+    "player2Name": "Creative AI",
+    "initialLegacy": "The Empire's Fall"
   }
 }

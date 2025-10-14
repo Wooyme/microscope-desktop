@@ -74,7 +74,7 @@ function SessionWeaverFlow() {
   const [isGodMode, setGodMode] = useState(false);
   const [isAiTurn, setIsAiTurn] = useState(false);
   const [focus, setFocus] = useState('');
-  const [legacies, setLegacies] = useState<string[]>(['The Empire\'s Fall']);
+  const [legacies, setLegacies] = useState<string[]>([t_initial('initialLegacy')]);
   const [isGameSeedModalOpen, setGameSeedModalOpen] = useState(false);
   const [gameSeed, setGameSeed] = useState<GameSeed>(initialGameSeed);
   const [players, setPlayers] = useState<Player[]>(initialPlayers);
@@ -453,7 +453,7 @@ function SessionWeaverFlow() {
     setNodesAtTurnStart(initialNodes);
     setHistoryLog([]);
     setFocus('');
-    setLegacies(['The Empire\'s Fall']);
+    setLegacies([t_initial('initialLegacy')]);
     nodeIdCounter = 3;
     toast({ title: t('newGameTitle'), description: t('newGameDescription') });
     setNewGameConfirmOpen(false);
@@ -616,6 +616,7 @@ function SessionWeaverFlow() {
                         onBigPictureClick={() => setGameSeedModalOpen(true)}
                         activePlayer={activePlayer}
                         legacies={legacies}
+                        setLegacies={setLegacies}
                       />
                       <TurnPanel
                         onEndTurn={handleEndTurn}

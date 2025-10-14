@@ -18,9 +18,10 @@ type SettingsPanelProps = {
   onBigPictureClick: () => void;
   activePlayer: Player | undefined;
   legacies: string[];
+  setLegacies: (legacies: string[]) => void;
 };
 
-export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictureClick, activePlayer, legacies }: SettingsPanelProps) {
+export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictureClick, activePlayer, legacies, setLegacies }: SettingsPanelProps) {
   const t = useTranslations('SettingsPanel');
   const t_general = useTranslations('General');
   const [isEditing, setIsEditing] = useState(false);
@@ -101,7 +102,7 @@ export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictur
 
       <Separator />
 
-      <LegacyPanel legacies={legacies} />
+      <LegacyPanel legacies={legacies} setLegacies={setLegacies} />
 
     </div>
   );
