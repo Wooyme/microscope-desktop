@@ -25,9 +25,8 @@ import EventNode from '@/components/nodes/event-node';
 import SceneNode from '@/components/nodes/scene-node';
 import Toolbar from '@/components/toolbar';
 import { generateNodeContent } from '@/ai/flows/suggest-next-move';
-import type { CritiqueAndRegenerateOutput } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import type { GameSeed, Player, LogEntry, AiStrategy, SaveFile } from '@/lib/types';
+import type { GameSeed, Player, LogEntry, AiStrategy, SaveFile, CritiqueAndRegenerateOutput } from '@/lib/types';
 import SettingsPanel from './settings-panel';
 import GameSeedModal from './game-seed-modal';
 import MultiplayerSettingsModal from './multiplayer-settings-modal';
@@ -558,6 +557,11 @@ function SessionWeaverFlow() {
       return {...n, data: {...n.data, updateNodeData, deleteNode }};
     });
   }, [nodes, edges, updateNodeData, addPeriod, deleteNode, addEvent, addScene, disconnectPeer, canCreateNode, canHostCreateGlobalNode, nodesCreatedThisTurn, firstNodeThisTurnId, isHost, activePlayer, inGodMode]);
+  
+  const parentNode = useMemo(() => {
+    if (!aiMoveProposal?.move.parentId) return null;
+    return nodes.find(n => n.id === aiMoveProposal.move.parentId);
+  }, [aiMoveProposal, nodes]);
 
   return (
       <div className="w-full h-screen flex flex-col">
@@ -638,6 +642,8 @@ function SessionWeaverFlow() {
                   personality={activePlayer.personality || 'Neutral'}
                   onAccept={handleAcceptAiMove}
                   onCancel={handleCancelAiMove}
+                  parentNodeName={parentNode?.data.name}
+                  parentNodeType={parentNode?.type}
                 />
               )}
           </div>

@@ -24,6 +24,8 @@ type AiReviewModalProps = {
   personality: string;
   onAccept: (proposal: CritiqueAndRegenerateOutput) => void;
   onCancel: () => void;
+  parentNodeName?: string;
+  parentNodeType?: string;
 };
 
 export default function AiReviewModal({
@@ -33,6 +35,8 @@ export default function AiReviewModal({
   personality,
   onAccept,
   onCancel,
+  parentNodeName,
+  parentNodeType,
 }: AiReviewModalProps) {
   const [currentProposal, setCurrentProposal] = useState<CritiqueAndRegenerateOutput | null>(null);
   const [feedback, setFeedback] = useState('');
@@ -84,7 +88,11 @@ export default function AiReviewModal({
         <DialogHeader>
           <DialogTitle className="font-headline">AI Suggestion</DialogTitle>
           <DialogDescription>
-            The AI proposes the following {nodeType}. Review it, provide feedback for regeneration, or accept it.
+            The AI proposes the following {nodeType}.{' '}
+            {parentNodeName && parentNodeType && (
+                <span>This <strong>{nodeType}</strong> will be added under the <strong>{parentNodeType}</strong> named <em>&quot;{parentNodeName}&quot;</em>.</span>
+            )}
+            Review it, provide feedback for regeneration, or accept it.
           </DialogDescription>
         </DialogHeader>
 
