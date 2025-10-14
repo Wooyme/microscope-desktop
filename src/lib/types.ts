@@ -76,3 +76,8 @@ export type SaveFile = {
     focus: string;
     nodeIdCounter: number;
 }
+
+export type CritiqueAndRegenerateOutput = {
+    name: string;
+    description: string;
+}

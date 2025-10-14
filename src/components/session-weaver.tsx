@@ -74,7 +74,6 @@ function SessionWeaverFlow() {
 
   const [isAiReviewModalOpen, setAiReviewModalOpen] = useState(false);
   const [aiMoveProposal, setAiMoveProposal] = useState<{move: AiMove, content: CritiqueAndRegenerateOutput} | null>(null);
-  const [isRegenerating, setIsRegenerating] = useState(false);
 
 
   const activePlayer = players[activePlayerIndex];
@@ -188,29 +187,9 @@ function SessionWeaverFlow() {
     }
   }, [activePlayer, isAiTurn, nodes, edges, historyLog, gameSeed, handleEndTurn, toast]);
 
-  const handleAiRegenerate = async (feedback: string) => {
-    if (!aiMoveProposal || !activePlayer?.isAI) return;
-    setIsRegenerating(true);
-    try {
-      const newContent = await critiqueAndRegenerate({
-        personality: activePlayer.personality || 'Neutral',
-        nodeType: aiMoveProposal.move.type as 'period' | 'event' | 'scene',
-        originalName: aiMoveProposal.content.name,
-        originalDescription: aiMoveProposal.content.description,
-        feedback: feedback,
-      });
-      setAiMoveProposal(prev => prev ? { ...prev, content: newContent } : null);
-    } catch (error) {
-      console.error("AI regeneration failed:", error);
-      toast({ variant: 'destructive', title: "AI Error", description: "Failed to regenerate content." });
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
-
-  const handleAcceptAiMove = () => {
+  const handleAcceptAiMove = (content: CritiqueAndRegenerateOutput) => {
     if (!aiMoveProposal) return;
-    const { move, content } = aiMoveProposal;
+    const { move } = aiMoveProposal;
     const { name, description } = content;
     const parentNode = nodes.find(n => n.id === move.parentId);
     
@@ -651,15 +630,16 @@ function SessionWeaverFlow() {
                 description="This will clear the current board and all progress. This action cannot be undone."
                 confirmText="Start New Game"
               />
-              <AiReviewModal
-                isOpen={isAiReviewModalOpen}
-                proposal={aiMoveProposal?.content}
-                nodeType={aiMoveProposal?.move.type}
-                isRegenerating={isRegenerating}
-                onAccept={handleAcceptAiMove}
-                onRegenerate={handleAiRegenerate}
-                onCancel={handleCancelAiMove}
-              />
+              {aiMoveProposal && activePlayer?.isAI && (
+                <AiReviewModal
+                  isOpen={isAiReviewModalOpen}
+                  initialProposal={aiMoveProposal.content}
+                  nodeType={aiMoveProposal.move.type}
+                  personality={activePlayer.personality || 'Neutral'}
+                  onAccept={handleAcceptAiMove}
+                  onCancel={handleCancelAiMove}
+                />
+              )}
           </div>
       </div>
   );

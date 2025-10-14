@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,37 +13,70 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
-import type { CritiqueAndRegenerateOutput } from '@/ai/flows/critique-and-regenerate';
+import { critiqueAndRegenerate } from '@/ai/flows/critique-and-regenerate';
+import { useToast } from '@/hooks/use-toast';
+import type { CritiqueAndRegenerateOutput } from '@/lib/types';
 
 type AiReviewModalProps = {
   isOpen: boolean;
-  proposal: CritiqueAndRegenerateOutput | undefined | null;
-  nodeType?: string;
-  isRegenerating: boolean;
-  onAccept: () => void;
-  onRegenerate: (feedback: string) => void;
+  initialProposal: CritiqueAndRegenerateOutput;
+  nodeType: string;
+  personality: string;
+  onAccept: (proposal: CritiqueAndRegenerateOutput) => void;
   onCancel: () => void;
 };
 
 export default function AiReviewModal({
   isOpen,
-  proposal,
+  initialProposal,
   nodeType,
-  isRegenerating,
+  personality,
   onAccept,
-  onRegenerate,
   onCancel,
 }: AiReviewModalProps) {
+  const [currentProposal, setCurrentProposal] = useState<CritiqueAndRegenerateOutput | null>(null);
   const [feedback, setFeedback] = useState('');
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const { toast } = useToast();
 
-  const handleRegenerate = () => {
-    if (feedback.trim()) {
-      onRegenerate(feedback);
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentProposal(initialProposal);
       setFeedback('');
+    }
+  }, [isOpen, initialProposal]);
+
+  const handleRegenerate = async () => {
+    if (!feedback.trim() || !currentProposal) {
+      return;
+    }
+    
+    setIsRegenerating(true);
+    try {
+      const newContent = await critiqueAndRegenerate({
+        personality,
+        nodeType: nodeType as 'period' | 'event' | 'scene',
+        originalName: currentProposal.name,
+        originalDescription: currentProposal.description,
+        feedback: feedback,
+      });
+      setCurrentProposal(newContent);
+      setFeedback('');
+    } catch (error) {
+      console.error("AI regeneration failed:", error);
+      toast({ variant: 'destructive', title: "AI Error", description: "Failed to regenerate content." });
+    } finally {
+      setIsRegenerating(false);
     }
   };
 
-  const showLoading = isRegenerating || !proposal;
+  const handleAccept = () => {
+    if (currentProposal) {
+      onAccept(currentProposal);
+    }
+  };
+
+  const showLoading = isRegenerating || !currentProposal;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
@@ -51,7 +84,7 @@ export default function AiReviewModal({
         <DialogHeader>
           <DialogTitle className="font-headline">AI Suggestion</DialogTitle>
           <DialogDescription>
-            The AI proposes the following {nodeType || 'node'}. Review it, provide feedback for regeneration, or accept it.
+            The AI proposes the following {nodeType}. Review it, provide feedback for regeneration, or accept it.
           </DialogDescription>
         </DialogHeader>
 
@@ -65,13 +98,13 @@ export default function AiReviewModal({
               <div>
                 <Label className="font-semibold">Name</Label>
                 <p className="text-lg font-bold p-2 border rounded-md bg-muted min-h-[2.5rem]">
-                  {proposal?.name}
+                  {currentProposal?.name}
                 </p>
               </div>
               <div>
                 <Label className="font-semibold">Description</Label>
                 <p className="text-sm p-2 border rounded-md bg-muted min-h-[6rem]">
-                  {proposal?.description}
+                  {currentProposal?.description}
                 </p>
               </div>
             </div>
@@ -97,7 +130,7 @@ export default function AiReviewModal({
             {isRegenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Regenerate
           </Button>
-          <Button onClick={onAccept} disabled={isRegenerating || !proposal}>
+          <Button onClick={handleAccept} disabled={isRegenerating || !currentProposal}>
             Accept
           </Button>
         </DialogFooter>

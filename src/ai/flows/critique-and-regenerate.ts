@@ -23,7 +23,7 @@ const CritiqueAndRegenerateOutputSchema = z.object({
   name: z.string().describe('The regenerated creative name for the node.'),
   description: z.string().describe('The regenerated creative description for the node.'),
 });
-export type CritiqueAndRegenerateOutput = z.infer<typeof CritiqueAndRegenerateOutputSchema>;
+type CritiqueAndRegenerateOutput = z.infer<typeof CritiqueAndRegenerateOutputSchema>;
 
 export async function critiqueAndRegenerate(input: CritiqueAndRegenerateInput): Promise<CritiqueAndRegenerateOutput> {
   
