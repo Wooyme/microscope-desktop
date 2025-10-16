@@ -107,20 +107,18 @@ function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
         <Handle type="target" position={Position.Left} id="peer-target" className="w-3 h-3 !bg-accent" />
         <Handle type="source" position={Position.Bottom} id="child-source" className="w-3 h-3 !bg-primary" />
       </Card>
-      <DialogContent className="sm:max-w-4xl flex flex-col max-h-[90vh]">
+      <DialogContent className="sm:max-w-4xl w-[90vw] h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{t('editPeriodTitle', { name })}</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="pr-4 flex-grow">
-          <div className="py-4">
+        <div className="py-4 flex-grow flex flex-col">
             <CharacterEditor
               content={description}
               onUpdate={onDescriptionChange}
               imageUrl={imageUrl}
               onImageUpdate={onImageChange}
             />
-          </div>
-        </ScrollArea>
+        </div>
         <DialogFooter className='mt-auto pt-4'>
           <Button onClick={() => setIsModalOpen(false)}>{t_general('done')}</Button>
         </DialogFooter>

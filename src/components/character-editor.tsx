@@ -63,15 +63,15 @@ export default function CharacterEditor({ content, onUpdate, imageUrl, onImageUp
 
   return (
     <>
-        <div className='flex flex-col md:flex-row gap-4'>
+        <div className='flex flex-col md:flex-row gap-4 flex-grow'>
             {onImageUpdate && (
                 <div className={cn("w-full md:w-1/2 flex flex-col gap-2", !imageUrl && "md:hidden")}>
                     {imageUrl ? (
-                        <button onClick={() => setIsImageModalOpen(true)} className="w-full aspect-video bg-muted rounded-md flex items-center justify-center overflow-hidden cursor-pointer relative">
+                        <button onClick={() => setIsImageModalOpen(true)} className="w-full flex-grow bg-muted rounded-md flex items-center justify-center overflow-hidden cursor-pointer relative">
                             <Image src={imageUrl} alt={t('bannerImageAlt')} fill className="object-cover" />
                         </button>
                     ) : (
-                        <div className="w-full aspect-video border-2 border-dashed rounded-md flex flex-col items-center justify-center text-muted-foreground">
+                        <div className="w-full h-full border-2 border-dashed rounded-md flex flex-col items-center justify-center text-muted-foreground">
                             <ImageIcon size={48} className='mb-2' />
                             <p>{t('noImage')}</p>
                         </div>
@@ -101,13 +101,13 @@ export default function CharacterEditor({ content, onUpdate, imageUrl, onImageUp
                         </div>
                     )}
                 </div>
-                <div className="border rounded-md">
+                <div className="border rounded-md h-full flex flex-col">
                 <Toolbar />
                 <textarea
                     value={text.replace(/<[^>]+>/g, '')} // Strip HTML for plain text editing
                     onChange={handleTextChange}
                     className={cn(
-                        "flex min-h-[310px] w-full rounded-b-md border-input bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+                        "flex-grow w-full rounded-b-md border-input bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
                         "border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     )}
                     placeholder={t('placeholder')}
@@ -117,8 +117,8 @@ export default function CharacterEditor({ content, onUpdate, imageUrl, onImageUp
         </div>
         {imageUrl && (
             <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
-                <DialogContent className="max-w-4xl p-0">
-                    <Image src={imageUrl} alt={t('bannerImageAlt')} width={1920} height={1080} className="w-full h-auto rounded-lg" />
+                <DialogContent className="max-w-4xl h-[90vh] p-0">
+                    <Image src={imageUrl} alt={t('bannerImageAlt')} layout="fill" objectFit="contain" className="rounded-lg" />
                 </DialogContent>
             </Dialog>
         )}
