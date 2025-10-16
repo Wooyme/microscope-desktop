@@ -67,8 +67,8 @@ export default function CharacterEditor({ content, onUpdate, imageUrl, onImageUp
             {onImageUpdate && (
                 <div className={cn("w-full md:w-1/2 flex flex-col gap-2", !imageUrl && "md:hidden")}>
                     {imageUrl ? (
-                        <button onClick={() => setIsImageModalOpen(true)} className="w-full aspect-video bg-muted rounded-md flex items-center justify-center overflow-hidden cursor-pointer">
-                            <Image src={imageUrl} alt={t('bannerImageAlt')} width={550} height={310} className="object-cover w-full h-full" />
+                        <button onClick={() => setIsImageModalOpen(true)} className="w-full aspect-video bg-muted rounded-md flex items-center justify-center overflow-hidden cursor-pointer relative">
+                            <Image src={imageUrl} alt={t('bannerImageAlt')} fill className="object-cover" />
                         </button>
                     ) : (
                         <div className="w-full aspect-video border-2 border-dashed rounded-md flex flex-col items-center justify-center text-muted-foreground">
