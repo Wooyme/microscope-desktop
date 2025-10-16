@@ -107,7 +107,7 @@ function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
         <Handle type="target" position={Position.Left} id="peer-target" className="w-3 h-3 !bg-accent" />
         <Handle type="source" position={Position.Bottom} id="child-source" className="w-3 h-3 !bg-primary" />
       </Card>
-      <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
+      <DialogContent className="sm:max-w-4xl flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{t('editPeriodTitle', { name })}</DialogTitle>
         </DialogHeader>

@@ -6,6 +6,7 @@ import { Bold, Italic, Underline, List, ListOrdered, Upload, X, Image as ImageIc
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { Dialog, DialogContent } from './ui/dialog';
 
 type CharacterEditorProps = {
   content: string;
@@ -18,6 +19,7 @@ type CharacterEditorProps = {
 export default function CharacterEditor({ content, onUpdate, imageUrl, onImageUpdate }: CharacterEditorProps) {
   const t = useTranslations('CharacterEditor');
   const [text, setText] = useState(content);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -60,57 +62,66 @@ export default function CharacterEditor({ content, onUpdate, imageUrl, onImageUp
   );
 
   return (
-    <div className='flex flex-col md:flex-row gap-4'>
-        {onImageUpdate && (
-            <div className={cn("w-full md:w-1/2 flex flex-col gap-2", !imageUrl && "md:hidden")}>
-                 {imageUrl ? (
-                  <div className="w-full aspect-video bg-muted rounded-md flex items-center justify-center overflow-hidden">
-                      <Image src={imageUrl} alt={t('bannerImageAlt')} width={550} height={310} className="object-cover w-full h-full" />
-                  </div>
-                 ) : (
-                    <div className="w-full aspect-video border-2 border-dashed rounded-md flex flex-col items-center justify-center text-muted-foreground">
-                        <ImageIcon size={48} className='mb-2' />
-                        <p>{t('noImage')}</p>
-                    </div>
-                 )}
-            </div>
-        )}
-        <div className={cn("flex-1", !imageUrl && 'w-full')}>
-            <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-semibold">{t('description')}</h3>
-                 {onImageUpdate && (
-                     <div className='flex gap-2'>
-                        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                            <Upload className="mr-2 h-4 w-4" /> {imageUrl ? t('changeImage') : t('upload')}
-                        </Button>
-                        {imageUrl && (
-                            <Button variant="destructive" size="sm" onClick={handleRemoveImage}>
-                                <X className="mr-2 h-4 w-4" /> {t('remove')}
+    <>
+        <div className='flex flex-col md:flex-row gap-4'>
+            {onImageUpdate && (
+                <div className={cn("w-full md:w-1/2 flex flex-col gap-2", !imageUrl && "md:hidden")}>
+                    {imageUrl ? (
+                        <button onClick={() => setIsImageModalOpen(true)} className="w-full aspect-video bg-muted rounded-md flex items-center justify-center overflow-hidden cursor-pointer">
+                            <Image src={imageUrl} alt={t('bannerImageAlt')} width={550} height={310} className="object-cover w-full h-full" />
+                        </button>
+                    ) : (
+                        <div className="w-full aspect-video border-2 border-dashed rounded-md flex flex-col items-center justify-center text-muted-foreground">
+                            <ImageIcon size={48} className='mb-2' />
+                            <p>{t('noImage')}</p>
+                        </div>
+                    )}
+                </div>
+            )}
+            <div className={cn("flex-1", !imageUrl && 'w-full')}>
+                <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-lg font-semibold">{t('description')}</h3>
+                    {onImageUpdate && (
+                        <div className='flex gap-2'>
+                            <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                                <Upload className="mr-2 h-4 w-4" /> {imageUrl ? t('changeImage') : t('upload')}
                             </Button>
-                        )}
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            accept="image/*"
-                            onChange={handleImageUpload}
-                        />
-                    </div>
-                 )}
-            </div>
-            <div className="border rounded-md">
-            <Toolbar />
-            <textarea
-                value={text.replace(/<[^>]+>/g, '')} // Strip HTML for plain text editing
-                onChange={handleTextChange}
-                className={cn(
-                    "flex min-h-[310px] w-full rounded-b-md border-input bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-                    "border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                )}
-                placeholder={t('placeholder')}
-            />
+                            {imageUrl && (
+                                <Button variant="destructive" size="sm" onClick={handleRemoveImage}>
+                                    <X className="mr-2 h-4 w-4" /> {t('remove')}
+                                </Button>
+                            )}
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                            />
+                        </div>
+                    )}
+                </div>
+                <div className="border rounded-md">
+                <Toolbar />
+                <textarea
+                    value={text.replace(/<[^>]+>/g, '')} // Strip HTML for plain text editing
+                    onChange={handleTextChange}
+                    className={cn(
+                        "flex min-h-[310px] w-full rounded-b-md border-input bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+                        "border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    )}
+                    placeholder={t('placeholder')}
+                />
+                </div>
             </div>
         </div>
-    </div>
+        {imageUrl && (
+            <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+                <DialogContent className="max-w-4xl p-0">
+                    <Image src={imageUrl} alt={t('bannerImageAlt')} width={1920} height={1080} className="w-full h-auto rounded-lg" />
+                </DialogContent>
+            </Dialog>
+        )}
+    </>
   );
 }

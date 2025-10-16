@@ -95,7 +95,7 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
         <Handle type="target" position={Position.Top} id="period-target" className="w-3 h-3 !bg-primary" />
         <Handle type="source" position={Position.Bottom} id="scene-source" className="w-3 h-3 !bg-green-500" />
       </Card>
-      <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
+      <DialogContent className="sm:max-w-4xl flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{t('editEventTitle', { name })}</DialogTitle>
         </DialogHeader>

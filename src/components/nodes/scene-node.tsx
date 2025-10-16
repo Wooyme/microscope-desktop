@@ -91,7 +91,7 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
         <Handle type="target" position={Position.Top} id="event-target" className="w-3 h-3 !bg-accent" />
       </Card>
 
-      <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
+      <DialogContent className="sm:max-w-4xl flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{t('editSceneTitle', { name })}</DialogTitle>
         </DialogHeader>
