@@ -62,6 +62,9 @@
     "errorDescription": "Failed to regenerate content."
   },
   "CharacterEditor": {
+    "description": "Description",
+    "changeImage": "Change Image",
+    "noImage": "No Image",
     "bannerImage": "Banner Image",
     "upload": "Upload",
     "remove": "Remove",
