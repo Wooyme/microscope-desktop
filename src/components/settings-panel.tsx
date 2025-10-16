@@ -33,7 +33,8 @@ export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictur
   };
 
   return (
-    <div className="absolute top-4 left-4 z-10 w-72 space-y-2">
+    <div className="absolute top-4 left-4 z-10 w-72 pointer-events-none">
+      <div className="pointer-events-auto flex flex-col space-y-2 p-4 bg-card/80 rounded-lg shadow-lg border border-border">
        {activePlayer ? (
         <div>
           <h3 className="text-xs uppercase text-muted-foreground font-semibold tracking-wider">{t('activePlayer')}</h3>
@@ -103,7 +104,7 @@ export default function SettingsPanel({ bigPicture, focus, setFocus, onBigPictur
       <Separator />
 
       <LegacyPanel legacies={legacies} setLegacies={setLegacies} />
-
+      </div>
     </div>
   );
 }
