@@ -47,27 +47,27 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
           <NodeToolbar
               onDelete={() => deleteNode(id)}
           />
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-green-500/10 p-0">
-          {imageUrl ? (
-            <div className="relative w-full h-32">
-              <Image src={imageUrl} alt={name} fill className="object-cover rounded-t-lg" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-              <CardTitle className="text-lg font-headline flex items-center gap-2 absolute bottom-2 left-4 text-white">
-                <Camera className="w-5 h-5" />
-                {t('scene')}
-              </CardTitle>
-            </div>
-          ) : (
-            <div className="p-4 text-green-700">
-              <CardTitle className="text-lg font-headline flex items-center gap-2">
-                <Camera className="w-5 h-5" />
-                {t('scene')}
-              </CardTitle>
-            </div>
-          )}
-        </CardHeader>
         <DialogTrigger asChild disabled={!isEditable}>
           <div className={cn(isEditable && "cursor-pointer")}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-green-500/10 p-0">
+              {imageUrl ? (
+                <div className="relative w-full h-32">
+                  <Image src={imageUrl} alt={name} fill className="object-cover rounded-t-lg" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                  <CardTitle className="text-lg font-headline flex items-center gap-2 absolute bottom-2 left-4 text-white">
+                    <Camera className="w-5 h-5" />
+                    {t('scene')}
+                  </CardTitle>
+                </div>
+              ) : (
+                <div className="p-4 text-green-700">
+                  <CardTitle className="text-lg font-headline flex items-center gap-2">
+                    <Camera className="w-5 h-5" />
+                    {t('scene')}
+                  </CardTitle>
+                </div>
+              )}
+            </CardHeader>
             <CardContent className="p-4 space-y-2">
               <Input
                 value={name}
