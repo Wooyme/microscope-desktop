@@ -1,15 +1,191 @@
 
 {
-    "CritiqueAndRegenerateFlow": {
-        "outputNameDescription": "为节点再生的创意名称。",
-        "outputDescriptionDescription": "为节点再生的创意描述。",
-        "prompt": "你是一个在合作讲故事游戏中的AI玩家，拥有“{{personality}}”的个性。\n你之前建议了一个名为“{{originalName}}”，描述为“{{originalDescription}}”的新{{nodeType}}。\n\n用户对你的建议提出了以下反馈：\n“{{feedback}}”\n\n你的任务是根据这个反馈重新生成该{{nodeType}}的名称和描述。\n在你创作的新内容中体现你的“{{personality}}”个性。\n以指定的JSON格式返回你的回应，包含新的'name'和'description'。\n不要重复原始建议。在你的修订中要有创意和思考。"
+  "SessionWeaver": {
+    "title": "剧本编织者",
+    "incompleteNodesTitle": "节点不完整",
+    "incompleteNodesDescription": "在结束回合前，请确保所有节点都有名称和描述。节点 “{nodeName}” 不完整。",
+    "logSummaryNodeType": "名为“{name}”的{type}",
+    "logSummaryDescription": "，描述为：“{description}”",
+    "logSummaryJoin": "和",
+    "logSummaryAction": "{playerName} 添加了 {summary}。",
+    "playerActionLoggedTitle": "玩家行动已记录",
+    "turnEndedTitle": "回合结束",
+    "nextPlayerTurn": "现在是 {playerName} 的回合。",
+    "yourTurnAgain": "没有其他玩家。又轮到你了。",
+    "aiErrorTitle": "AI 错误",
+    "aiFailedToMove": "AI 玩家未能执行行动。",
+    "nodeDeletedTitle": "节点已删除",
+    "nodeDeletedDescription": "所选节点已从叙事中移除。",
+    "disconnectedTitle": "已断开连接",
+    "disconnectedDescription": "时代连接已移除。",
+    "newGameTitle": "新游戏已开始",
+    "newGameDescription": "时间线已重置。",
+    "saveSuccessTitle": "成功",
+    "saveSuccessDescription": "游戏已成功保存。",
+    "saveErrorTitle": "错误",
+    "saveErrorDescription": "保存游戏失败。",
+    "loadSuccessTitle": "成功",
+    "loadSuccessDescription": "游戏已成功加载。",
+    "loadErrorTitle": "错误",
+    "loadErrorDescription": "解析存档文件失败。",
+    "newGameConfirmTitle": "开始新游戏？",
+    "newGameConfirmDescription": "这将清除当前棋盘和所有进度。此操作无法撤销。",
+    "newGameConfirmText": "开始新游戏"
+  },
+  "General": {
+    "name": "名称",
+    "description": "描述",
+    "accept": "接受",
+    "cancel": "取消",
+    "done": "完成",
+    "save": "保存",
+    "period": "时代",
+    "event": "事件",
+    "scene": "场景",
+    "Creative": "创造型",
+    "Logical": "逻辑型",
+    "Chaotic": "混乱型",
+    "Historian": "历史学家",
+    "Pragmatist": "实用主义者",
+    "Balanced": "均衡",
+    "Builder": "建造者",
+    "Detailer": "细节控",
+    "Focuser": "聚焦者",
+    "roleplay": "角色扮演"
+  },
+  "AiReviewModal": {
+    "title": "AI 建议",
+    "description": "AI 提议了以下{nodeType}。",
+    "parentContext": "这个 <strong>{nodeType}</strong> 将被添加到名为 <em>{parentNodeName}</em> 的 <strong>{parentNodeType}</strong> 下。",
+    "feedbackLabel": "重新生成的反馈（可选）",
+    "feedbackPlaceholder": "例如，“让它更神秘一点”或“那个名字听起来太现代了...”",
+    "regenerate": "重新生成",
+    "errorTitle": "AI 错误",
+    "errorDescription": "无法重新生成内容。"
+  },
+  "CharacterEditor": {
+    "description": "描述",
+    "changeImage": "更换图片",
+    "noImage": "没有图片",
+    "bannerImage": "横幅图片",
+    "upload": "上传",
+    "remove": "移除",
+    "bannerImageAlt": "横幅图片",
+    "placeholder": "在此输入您的场景细节..."
+  },
+  "GameSeedModal": {
+    "title": "编辑游戏种子",
+    "description": "为您的游戏会话定义核心概念和约束。",
+    "bigPictureLabel": "宏大叙事",
+    "bigPicturePlaceholder": "中心主题或冲突是什么？",
+    "paletteLabel": "调色板",
+    "paletteDescription": "添加您希望在游戏中看到的元素。",
+    "palettePlaceholder": "例如，“赛博朋克美学”",
+    "bannedLabel": "禁用元素",
+    "bannedDescription": "添加您希望避免的元素。",
+    "bannedPlaceholder": "例如，“龙”",
+    "save": "保存种子"
+  },
+  "LegacyEditorModal": {
+    "title": "编辑遗产",
+    "description": "遗产是游戏中涌现的主题和结果。随着故事的演变，添加或删除它们。",
+    "newLegacyPlaceholder": "添加一个新的遗产"
+  },
+  "MultiplayerSettingsModal": {
+    "title": "多人游戏设置",
+    "description": "管理会话中的玩家。",
+    "addHumanPlayer": "添加人类玩家",
+    "newPlayerNamePlaceholder": "新玩家名称",
+    "addAiPlayer": "添加 AI 玩家",
+    "personality": "个性",
+    "strategy": "策略",
+    "currentPlayers": "当前玩家",
+    "noPlayers": "还没有玩家。在上方添加一个吧！"
+  },
+  "Nodes": {
+    "period": "时代",
+    "event": "事件",
+    "scene": "场景",
+    "addSceneTooltip": "添加场景",
+    "addEventTooltip": "添加事件",
+    "addPeriodBeforeTooltip": "在前面添加时代",
+    "addPeriodAfterTooltip": "在后面添加时代",
+    "periodNamePlaceholder": "时代名称",
+    "eventNamePlaceholder": "事件名称",
+    "sceneNamePlaceholder": "场景名称",
+    "descriptionPlaceholder": "点击添加描述...",
+    "editPeriodTitle": "编辑时代：{name}",
+    "editEventTitle": "编辑事件：{name}",
+    "editSceneTitle": "编辑场景：{name}",
+    "roleplayScene": "角色扮演场景"
+  },
+  "NodeToolbar": {
+    "addPeriodBefore": "在前面添加时代",
+    "disconnectLeft": "断开左侧连接",
+    "deleteNode": "删除节点",
+    "addEvent": "添加事件",
+    "addPeriodAfter": "在后面添加时代",
+    "disconnectRight": "断开右侧连接"
+  },
+  "LegacyPanel": {
+    "title": "遗产",
+    "noLegacies": "尚未建立任何遗产。"
+  },
+  "SettingsPanel": {
+    "activePlayer": "当前玩家",
+    "playerTurn": "{playerName} 的回合",
+    "noActivePlayer": "无当前玩家",
+    "bigPicture": "宏大叙事",
+    "focus": "焦点",
+    "focusPlaceholder": "本次会话的中心主题是什么？",
+    "noFocusSet": "未设置焦点。"
+  },
+  "Toolbar": {
+    "newGame": "新游戏",
+    "loadGame": "加载游戏",
+    "saveGame": "保存游戏",
+    "addPeriod": "添加时代",
+    "editGameSeed": "编辑游戏种子",
+    "multiplayerSettings": "多人游戏设置",
+    "godMode": "上帝模式"
+  },
+  "TurnPanel": {
+    "nodesCreated": "已创建节点: {count}/{max}",
+    "aiThinking": "AI 正在思考...",
+    "endTurn": "结束回合",
+    "endTurnTooltip": "将回合交给下一位玩家"
+  },
+  "InitialGame": {
+    "bookendStartName": "书挡：开端",
+    "bookendStartDescription": "我们历史的起点。",
+    "bookendEndName": "书挡：终局",
+    "bookendEndDescription": "我们历史的终点。",
+    "gameSeed": {
+      "bigPicture": "一部关于人类最后残余寻找新家园的宏大太空歌剧。",
+      "palette": [
+        "远古外星神器",
+        "政治阴谋",
+        "超光速旅行的后果"
+      ],
+      "banned": [
+        "魔法",
+        "时间旅行"
+      ]
     },
-    "SuggestNextMoveFlow": {
-        "outputNameDescription": "为新节点设计的创意名称。",
-        "outputDescriptionDescription": "为新节点设计的创意描述。",
-        "parentInfo": "它应该是“{{parentName}}”的子节点，其内容关于：“{{parentDescription}}”。",
-        "noParentInfo": "这是时间线上的第一个条目。",
-        "prompt": "你是一个在合作讲故事游戏中的AI玩家，拥有“{{personality}}”的个性。\n你的任务是为一个新的{{nodeType}}创造一个有创意的名称和引人入胜的描述。\n\n整体故事的指导方针是：\n宏大叙事：{{bigPicture}}\n调色板（包含的事物）：{{palette}}\n禁止（避免的事物）：{{banned}}\n\n你正在创建的新{{nodeType}}应该融入时间线。{{parentInfo}}\n\n在创作的内容中要有创意并体现你的“{{personality}}”个性。\n以指定的JSON格式返回你的回应，包含一个'name'和一个'description'。"
-    }
+    "player1Name": "亚历克斯",
+    "player2Name": "创造型AI",
+    "initialLegacy": "帝国的陨落"
+  },
+  "RoleplayModal": {
+    "title": "角色扮演对话",
+    "description": "与 AI 角色进行对话。",
+    "aiPersonality": "AI 个性",
+    "startTyping": "开始输入您的消息...",
+    "sendMessage": "发送消息",
+    "errorTitle": "AI 对话错误",
+    "errorDescription": "无法从 AI 获取回应。"
+  },
+  "RoleplayDialogueFlow": {
+    "prompt": "你是一个角色扮演游戏中的 AI 角色。你必须严格扮演“{{personality}}”的个性。\n场景名为“{{sceneName}}”，描述为：“{{sceneDescription}}”。\n根据用户的最后一条消息继续对话。只以你的角色身份回应。不要脱离角色或解释说你是一个 AI。"
+  }
 }

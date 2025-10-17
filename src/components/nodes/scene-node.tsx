@@ -2,7 +2,7 @@ import { memo, useState } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Camera } from 'lucide-react';
+import { Camera, MessageSquare } from 'lucide-react';
 import NodeToolbar from './node-toolbar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,13 +10,17 @@ import CharacterEditor from '../character-editor';
 import { cn } from '@/lib/utils';
 import { Textarea } from '../ui/textarea';
 import Image from 'next/image';
-import { ScrollArea } from '../ui/scroll-area';
 import { useTranslations } from 'next-intl';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import RoleplayModal from '../roleplay-modal';
+import type { DialogueMessage } from '@/lib/types';
 
 type SceneNodeData = {
   name: string;
   description: string;
   imageUrl?: string;
+  mode?: 'description' | 'roleplay';
+  conversation?: DialogueMessage[];
   updateNodeData: (id: string, data: any) => void;
   deleteNode: (nodeId: string) => void;
 }
@@ -24,8 +28,9 @@ type SceneNodeData = {
 function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
   const t = useTranslations('Nodes');
   const t_general = useTranslations('General');
-  const { name, description, imageUrl, updateNodeData, deleteNode } = data;
+  const { name, description, imageUrl, updateNodeData, deleteNode, mode = 'description', conversation = [] } = data;
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(mode);
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if(updateNodeData) updateNodeData(id, { name: e.target.value });
@@ -39,7 +44,17 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
     if (updateNodeData) updateNodeData(id, { imageUrl: url });
   };
 
+  const onConversationChange = (newConversation: DialogueMessage[]) => {
+    if (updateNodeData) updateNodeData(id, { conversation: newConversation });
+  };
+
+  const onTabChange = (newTab: string) => {
+    setActiveTab(newTab as 'description' | 'roleplay');
+    if (updateNodeData) updateNodeData(id, { mode: newTab });
+  };
+
   const isEditable = !!updateNodeData;
+  const isRoleplay = mode === 'roleplay';
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -55,15 +70,15 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
                   <Image src={imageUrl} alt={name} fill className="object-cover rounded-t-lg" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                   <CardTitle className="text-lg font-headline flex items-center gap-2 absolute bottom-2 left-4 text-white">
-                    <Camera className="w-5 h-5" />
-                    {t('scene')}
+                    {isRoleplay ? <MessageSquare className="w-5 h-5" /> : <Camera className="w-5 h-5" />}
+                    {isRoleplay ? t('roleplayScene') : t('scene')}
                   </CardTitle>
                 </div>
               ) : (
                 <div className="p-4 text-green-700">
                   <CardTitle className="text-lg font-headline flex items-center gap-2">
-                    <Camera className="w-5 h-5" />
-                    {t('scene')}
+                    {isRoleplay ? <MessageSquare className="w-5 h-5" /> : <Camera className="w-5 h-5" />}
+                    {isRoleplay ? t('roleplayScene') : t('scene')}
                   </CardTitle>
                 </div>
               )}
@@ -95,14 +110,28 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
         <DialogHeader>
           <DialogTitle>{t('editSceneTitle', { name })}</DialogTitle>
         </DialogHeader>
-        <div className="py-4 flex-grow flex flex-col">
+        <Tabs value={activeTab} onValueChange={onTabChange} className="flex-grow flex flex-col">
+          <TabsList>
+            <TabsTrigger value="description">{t_general('description')}</TabsTrigger>
+            <TabsTrigger value="roleplay">{t_general('roleplay')}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="description" className="flex-grow mt-4">
             <CharacterEditor
-              content={description}
-              onUpdate={onDescriptionChange}
-              imageUrl={imageUrl}
-              onImageUpdate={onImageChange}
+                content={description}
+                onUpdate={onDescriptionChange}
+                imageUrl={imageUrl}
+                onImageUpdate={onImageChange}
+              />
+          </TabsContent>
+          <TabsContent value="roleplay" className="flex-grow mt-4">
+            <RoleplayModal 
+              sceneName={name}
+              sceneDescription={description}
+              conversation={conversation}
+              onConversationChange={onConversationChange}
             />
-        </div>
+          </TabsContent>
+        </Tabs>
         <DialogFooter className="mt-auto pt-4">
           <Button onClick={() => setIsModalOpen(false)}>{t_general('done')}</Button>
         </DialogFooter>

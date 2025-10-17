@@ -11,9 +11,14 @@ export type Period = {
 export type Event = {
     id:string;
     name: string;
-    description: string;
+    description:string;
     imageUrl?: string;
     position: { x: number, y: number };
+};
+
+export type DialogueMessage = {
+    role: 'user' | 'model';
+    content: string;
 };
 
 export type Scene = {
@@ -22,6 +27,8 @@ export type Scene = {
     description: string;
     imageUrl?: string;
     position: { x: number, y: number };
+    mode?: 'description' | 'roleplay';
+    conversation?: DialogueMessage[];
 };
   
 export type Legacy = {

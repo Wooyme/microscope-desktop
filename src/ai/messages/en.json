@@ -1,15 +1,191 @@
 
 {
-    "CritiqueAndRegenerateFlow": {
-        "outputNameDescription": "The regenerated creative name for the node.",
-        "outputDescriptionDescription": "The regenerated creative description for the node.",
-        "prompt": "You are an AI player with a \"{{personality}}\" personality in a collaborative storytelling game.\nYou previously suggested a new {{nodeType}} with the name \"{{originalName}}\" and description \"{{originalDescription}}\".\n\nThe user has provided the following feedback on your suggestion:\n\"{{feedback}}\"\n\nYour task is to regenerate the name and description for the {{nodeType}}, taking this feedback into account.\nEmbody your \"{{personality}}\" personality in the new content you create.\nReturn your response in the specified JSON format with a new 'name' and 'description'.\nDo not repeat the original suggestion. Be creative and thoughtful in your revision."
+  "SessionWeaver": {
+    "title": "Session Weaver",
+    "incompleteNodesTitle": "Incomplete Nodes",
+    "incompleteNodesDescription": "Please ensure all nodes have a name and a description before ending the turn. Node \"{nodeName}\" is incomplete.",
+    "logSummaryNodeType": "a {type} named '{name}'",
+    "logSummaryDescription": " with description: \"{description}\"",
+    "logSummaryJoin": " and ",
+    "logSummaryAction": "{playerName} added {summary}.",
+    "playerActionLoggedTitle": "Player Action Logged",
+    "turnEndedTitle": "Turn Ended",
+    "nextPlayerTurn": "It's now {playerName}'s turn.",
+    "yourTurnAgain": "No other players. It's your turn again.",
+    "aiErrorTitle": "AI Error",
+    "aiFailedToMove": "The AI player failed to make a move.",
+    "nodeDeletedTitle": "Node Deleted",
+    "nodeDeletedDescription": "The selected node has been removed from the narrative.",
+    "disconnectedTitle": "Disconnected",
+    "disconnectedDescription": "The period connection has been removed.",
+    "newGameTitle": "New Game Started",
+    "newGameDescription": "The timeline has been reset.",
+    "saveSuccessTitle": "Success",
+    "saveSuccessDescription": "Game saved successfully.",
+    "saveErrorTitle": "Error",
+    "saveErrorDescription": "Failed to save game.",
+    "loadSuccessTitle": "Success",
+    "loadSuccessDescription": "Game loaded successfully.",
+    "loadErrorTitle": "Error",
+    "loadErrorDescription": "Failed to parse save file.",
+    "newGameConfirmTitle": "Start a New Game?",
+    "newGameConfirmDescription": "This will clear the current board and all progress. This action cannot be undone.",
+    "newGameConfirmText": "Start New Game"
+  },
+  "General": {
+    "name": "Name",
+    "description": "Description",
+    "accept": "Accept",
+    "cancel": "Cancel",
+    "done": "Done",
+    "save": "Save",
+    "period": "Period",
+    "event": "Event",
+    "scene": "Scene",
+    "Creative": "Creative",
+    "Logical": "Logical",
+    "Chaotic": "Chaotic",
+    "Historian": "Historian",
+    "Pragmatist": "Pragmatist",
+    "Balanced": "Balanced",
+    "Builder": "Builder",
+    "Detailer": "Detailer",
+    "Focuser": "Focuser",
+    "roleplay": "Roleplay"
+  },
+  "AiReviewModal": {
+    "title": "AI Suggestion",
+    "description": "The AI proposes the following {nodeType}.",
+    "parentContext": "This <strong>{nodeType}</strong> will be added under the <strong>{parentNodeType}</strong> named <em>{parentNodeName}</em>.",
+    "feedbackLabel": "Feedback for Regeneration (Optional)",
+    "feedbackPlaceholder": "e.g., 'Make it more mysterious' or 'That name sounds too modern...'",
+    "regenerate": "Regenerate",
+    "errorTitle": "AI Error",
+    "errorDescription": "Failed to regenerate content."
+  },
+  "CharacterEditor": {
+    "description": "Description",
+    "changeImage": "Change Image",
+    "noImage": "No Image",
+    "bannerImage": "Banner Image",
+    "upload": "Upload",
+    "remove": "Remove",
+    "bannerImageAlt": "Banner image",
+    "placeholder": "Type your scene details here..."
+  },
+  "GameSeedModal": {
+    "title": "Edit Game Seed",
+    "description": "Define the core concepts and constraints for your game session.",
+    "bigPictureLabel": "The Big Picture",
+    "bigPicturePlaceholder": "What is the central theme or conflict?",
+    "paletteLabel": "Palette",
+    "paletteDescription": "Add ingredients you want to see in the game.",
+    "palettePlaceholder": "e.g., 'Cyberpunk aesthetics'",
+    "bannedLabel": "Banned Ingredients",
+    "bannedDescription": "Add elements you want to avoid.",
+    "bannedPlaceholder": "e.g., 'Dragons'",
+    "save": "Save Seed"
+  },
+  "LegacyEditorModal": {
+    "title": "Edit Legacies",
+    "description": "Legacies are themes and outcomes that emerge from your game. Add or remove them as your story evolves.",
+    "newLegacyPlaceholder": "Add a new Legacy"
+  },
+  "MultiplayerSettingsModal": {
+    "title": "Multiplayer Settings",
+    "description": "Manage the players in your session.",
+    "addHumanPlayer": "Add Human Player",
+    "newPlayerNamePlaceholder": "New player name",
+    "addAiPlayer": "Add AI Player",
+    "personality": "Personality",
+    "strategy": "Strategy",
+    "currentPlayers": "Current Players",
+    "noPlayers": "No players yet. Add one above!"
+  },
+  "Nodes": {
+    "period": "Period",
+    "event": "Event",
+    "scene": "Scene",
+    "addSceneTooltip": "Add Scene",
+    "addEventTooltip": "Add Event",
+    "addPeriodBeforeTooltip": "Add Period Before",
+    "addPeriodAfterTooltip": "Add Period After",
+    "periodNamePlaceholder": "Period Name",
+    "eventNamePlaceholder": "Event Name",
+    "sceneNamePlaceholder": "Scene Name",
+    "descriptionPlaceholder": "Click to add a description...",
+    "editPeriodTitle": "Edit Period: {name}",
+    "editEventTitle": "Edit Event: {name}",
+    "editSceneTitle": "Edit Scene: {name}",
+    "roleplayScene": "Roleplay Scene"
+  },
+  "NodeToolbar": {
+    "addPeriodBefore": "Add Period Before",
+    "disconnectLeft": "Disconnect Left",
+    "deleteNode": "Delete Node",
+    "addEvent": "Add Event",
+    "addPeriodAfter": "Add Period After",
+    "disconnectRight": "Disconnect Right"
+  },
+  "LegacyPanel": {
+    "title": "Legacies",
+    "noLegacies": "No legacies established yet."
+  },
+  "SettingsPanel": {
+    "activePlayer": "Active Player",
+    "playerTurn": "{playerName}'s Turn",
+    "noActivePlayer": "No active player",
+    "bigPicture": "Big Picture",
+    "focus": "Focus",
+    "focusPlaceholder": "What is the central theme of this session?",
+    "noFocusSet": "No focus set."
+  },
+  "Toolbar": {
+    "newGame": "New Game",
+    "loadGame": "Load Game",
+    "saveGame": "Save Game",
+    "addPeriod": "Add Period",
+    "editGameSeed": "Edit Game Seed",
+    "multiplayerSettings": "Multiplayer Settings",
+    "godMode": "God Mode"
+  },
+  "TurnPanel": {
+    "nodesCreated": "Nodes Created: {count}/{max}",
+    "aiThinking": "AI is thinking...",
+    "endTurn": "End Turn",
+    "endTurnTooltip": "Pass the turn to the next player"
+  },
+  "InitialGame": {
+    "bookendStartName": "Bookend: The Beginning",
+    "bookendStartDescription": "The start of our history.",
+    "bookendEndName": "Bookend: The End",
+    "bookendEndDescription": "The conclusion of our history.",
+    "gameSeed": {
+      "bigPicture": "A grand space opera about the last remnants of humanity searching for a new home.",
+      "palette": [
+        "Ancient alien artifacts",
+        "Political intrigue",
+        "FTL travel consequences"
+      ],
+      "banned": [
+        "Magic",
+        "Time travel"
+      ]
     },
-    "SuggestNextMoveFlow": {
-        "outputNameDescription": "The creative name for the new node.",
-        "outputDescriptionDescription": "The creative description for the new node.",
-        "parentInfo": "It should be a child of \"{{parentName}}\" which is about: \"{{parentDescription}}\".",
-        "noParentInfo": "This is the very first entry in the timeline.",
-        "prompt": "You are an AI player with a \"{{personality}}\" personality in a collaborative storytelling game.\nYour task is to invent a creative name and a compelling description for a new {{nodeType}}.\n\nThe overall story guidelines are:\nBIG PICTURE: {{bigPicture}}\nPALETTE (things to include): {{palette}}\nBANNED (things to avoid): {{banned}}\n\nThe new {{nodeType}} you are creating should fit into the timeline. {{parentInfo}}\n\nBe creative and embody your \"{{personality}}\" personality in the content you create.\nReturn your response in the specified JSON format with a 'name' and a 'description'."
-    }
+    "player1Name": "Alex",
+    "player2Name": "Creative AI",
+    "initialLegacy": "The Empire's Fall"
+  },
+  "RoleplayModal": {
+    "title": "Roleplay Dialogue",
+    "description": "Engage in a dialogue with an AI character.",
+    "aiPersonality": "AI Personality",
+    "startTyping": "Start typing your message...",
+    "sendMessage": "Send Message",
+    "errorTitle": "AI Dialogue Error",
+    "errorDescription": "Could not get a response from the AI."
+  },
+  "RoleplayDialogueFlow": {
+    "prompt": "You are an AI character in a role-playing game. You must strictly embody the personality of \"{{personality}}\".\nThe scene is called \"{{sceneName}}\" and is described as: \"{{sceneDescription}}\".\nContinue the dialogue based on the user's last message. Respond only as your character would. Do not break character or explain that you are an AI."
+  }
 }
