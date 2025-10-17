@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Loader2, Send } from 'lucide-react';
 import { getInitials, cn } from '@/lib/utils';
 import type { DialogueMessage } from '@/lib/types';
@@ -41,7 +41,7 @@ export default function RoleplayModal({
   const [selectedPersonality, setSelectedPersonality] = useState(aiPersonalities[0]);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const locale = useTranslations.useLocale();
+  const locale = useLocale();
 
   useEffect(() => {
     if (scrollAreaRef.current) {
