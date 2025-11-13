@@ -37,6 +37,7 @@ import AiReviewModal from './ai-review-modal';
 import { useLocale, useTranslations } from 'next-intl';
 import { useGameState } from '@/hooks/useGameState';
 import { saveGameToFile, loadGameFromFile } from '@/lib/save-load-utils';
+import { useAiTurn } from '@/hooks/useAiTurn';
 
 
 let nodeIdCounter = 3;
@@ -111,12 +112,13 @@ function SessionWeaverFlow() {
     getSaveFile,
   } = gameState;
 
-  const [isAiTurn, setIsAiTurn] = useState(false);
+  // Use the AI turn hook
+  const { isAiTurn, aiMoveProposal, executeAiTurn, resetAiTurn, setIsAiTurn } = useAiTurn();
+
   const [isGameSeedModalOpen, setGameSeedModalOpen] = useState(false);
   const [isMultiplayerModalOpen, setMultiplayerModalOpen] = useState(false);
   const [isNewGameConfirmOpen, setNewGameConfirmOpen] = useState(false);
   const [isAiReviewModalOpen, setAiReviewModalOpen] = useState(false);
-  const [aiMoveProposal, setAiMoveProposal] = useState<{move: AiMove, content: CritiqueAndRegenerateOutput} | null>(null);
 
   const maxNodesPerTurn = inGodMode ? Infinity : (isHost ? 2 : 1);
   const canCreateNode = nodesCreatedThisTurn < maxNodesPerTurn;
@@ -175,7 +177,7 @@ function SessionWeaverFlow() {
     setNodesCreatedThisTurn(0);
     setFirstNodeThisTurnId(null);
     setNodesAtTurnStart(nodes); // Snapshot nodes for the next turn
-    setAiMoveProposal(null);
+    resetAiTurn();
 
     if (players[nextPlayerIndex]) {
         toast({
@@ -188,45 +190,31 @@ function SessionWeaverFlow() {
             description: t('yourTurnAgain'),
         })
     }
-  }, [activePlayer, nodes, nodesAtTurnStart, players, activePlayerIndex, toast, t]);
+  }, [activePlayer, nodes, nodesAtTurnStart, players, activePlayerIndex, toast, t, resetAiTurn]);
 
   const handleAiTurn = useCallback(async () => {
-    if (!activePlayer?.isAI || isAiTurn) return;
-  
-    setIsAiTurn(true);
-  
-    try {
-      const move = determineAiMove(nodes, edges, historyLog, activePlayer.strategy);
-      if (!move) {
-        throw new Error("AI could not determine a valid move.");
-      }
+    if (!activePlayer?.isAI) return;
 
-      const parentNode = nodes.find(n => n.id === move.parentId);
-      const parentNodeData = parentNode?.data as { name?: string; description?: string } | undefined;
-  
-      const content = await generateNodeContent({
-        gameSeed: gameSeed,
-        personality: activePlayer.personality || 'Neutral',
-        nodeType: move.type as 'period' | 'event' | 'scene',
-        locale: locale,
-        parentContext: parentNodeData ? { name: parentNodeData.name || '', description: parentNodeData.description || '' } : undefined,
-      });
-
-      if (content) {
-        setAiMoveProposal({ move, content });
+    await executeAiTurn(activePlayer, {
+      nodes,
+      edges,
+      historyLog,
+      gameSeed,
+      locale,
+      onSuccess: () => {
         setAiReviewModalOpen(true);
-      } else {
-        throw new Error("AI failed to generate initial content.");
-      }
-  
-    } catch (error) {
-      console.error("AI turn failed:", error);
-      toast({ variant: 'destructive', title: t('aiErrorTitle'), description: t('aiFailedToMove') });
-      handleEndTurn();
-    } finally {
-      // isAiTurn will be set to false when the review modal is closed or actioned.
-    }
-  }, [activePlayer, isAiTurn, nodes, edges, historyLog, gameSeed, handleEndTurn, toast, t, locale]);
+      },
+      onError: (error) => {
+        console.error('AI turn failed:', error);
+        toast({
+          variant: 'destructive',
+          title: t('aiErrorTitle'),
+          description: t('aiFailedToMove'),
+        });
+        handleEndTurn();
+      },
+    });
+  }, [activePlayer, nodes, edges, historyLog, gameSeed, locale, executeAiTurn, handleEndTurn, toast, t]);
 
   const handleAcceptAiMove = (content: CritiqueAndRegenerateOutput) => {
     if (!aiMoveProposal) return;
@@ -270,7 +258,7 @@ function SessionWeaverFlow() {
 
   const handleCancelAiMove = () => {
     setAiReviewModalOpen(false);
-    setIsAiTurn(false);
+    resetAiTurn();
     handleEndTurn();
   }
 
