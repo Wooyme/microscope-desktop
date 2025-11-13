@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Handle, Position, NodeProps, Node } from '@xyflow/react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { CalendarDays } from 'lucide-react';
@@ -13,25 +13,40 @@ import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
 import { useTranslations } from 'next-intl';
 
-type PeriodNodeData = {
+export type PeriodNodeData = {
   name: string;
   description: string;
   imageUrl?: string;
-  updateNodeData: (id: string, data: any) => void;
-  addPeriod: (direction: 'left' | 'right', sourceNodeId: string) => void;
-  deleteNode: (nodeId: string) => void;
-  addEvent: (sourceNodeId: string) => void;
-  isConnectedLeft: boolean;
-  isConnectedRight: boolean;
-  disconnectPeer: (nodeId: string, direction: 'left' | 'right') => void;
-  canCreateNode: boolean;
-  canAddChild: boolean;
+  updateNodeData?: (id: string, data: any) => void;
+  addPeriod?: (direction: 'left' | 'right', sourceNodeId: string) => void;
+  deleteNode?: (nodeId: string) => void;
+  addEvent?: (sourceNodeId: string) => void;
+  isConnectedLeft?: boolean;
+  isConnectedRight?: boolean;
+  disconnectPeer?: (nodeId: string, direction: 'left' | 'right') => void;
+  canCreateNode?: boolean;
+  canAddChild?: boolean;
 }
 
-function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
+type PeriodNode = Node<PeriodNodeData, 'period'>;
+
+function PeriodNode({ id, data }: NodeProps<PeriodNode>) {
   const t = useTranslations('Nodes');
   const t_general = useTranslations('General');
-  const { name, description, imageUrl, updateNodeData, addPeriod, deleteNode, addEvent, isConnectedLeft, isConnectedRight, disconnectPeer, canCreateNode, canAddChild } = data;
+  const { 
+    name, 
+    description, 
+    imageUrl, 
+    updateNodeData, 
+    addPeriod, 
+    deleteNode, 
+    addEvent, 
+    isConnectedLeft = false, 
+    isConnectedRight = false, 
+    disconnectPeer, 
+    canCreateNode = false, 
+    canAddChild = false 
+  } = data;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,12 +67,12 @@ function PeriodNode({ id, data }: NodeProps<PeriodNodeData>) {
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <Card className="w-64 shadow-lg border-2 border-primary/50 group relative">
         <NodeToolbar
-          onAddLeft={canCreateNode && !isConnectedLeft ? () => addPeriod('left', id) : undefined}
-          onAddRight={canCreateNode && !isConnectedRight ? () => addPeriod('right', id) : undefined}
-          onDelete={() => deleteNode(id)}
-          onAddChild={canAddChild ? () => addEvent(id) : undefined}
-          onDisconnectLeft={isConnectedLeft ? () => disconnectPeer(id, 'left') : undefined}
-          onDisconnectRight={isConnectedRight ? () => disconnectPeer(id, 'right') : undefined}
+          onAddLeft={canCreateNode && !isConnectedLeft && addPeriod ? () => addPeriod('left', id) : undefined}
+          onAddRight={canCreateNode && !isConnectedRight && addPeriod ? () => addPeriod('right', id) : undefined}
+          onDelete={deleteNode ? () => deleteNode(id) : undefined}
+          onAddChild={canAddChild && addEvent ? () => addEvent(id) : undefined}
+          onDisconnectLeft={isConnectedLeft && disconnectPeer ? () => disconnectPeer(id, 'left') : undefined}
+          onDisconnectRight={isConnectedRight && disconnectPeer ? () => disconnectPeer(id, 'right') : undefined}
           addLeftTooltip={t('addPeriodBeforeTooltip')}
           addRightTooltip={t('addPeriodAfterTooltip')}
           addChildTooltip={t('addEventTooltip')}

@@ -206,7 +206,7 @@ function SessionWeaverFlow() {
     if (!aiMoveProposal) return;
     const { move } = aiMoveProposal;
     const { name, description } = content;
-    const parentNode = nodes.find(n => n.id === move.parentId);
+    const parentNode = move.parentId ? nodes.find(n => n.id === move.parentId) : undefined;
     
     const newNodeId = getUniqueNodeId(move.type);
     let newNode: Node | null = null;
@@ -214,19 +214,19 @@ function SessionWeaverFlow() {
 
     if (move.type === 'period' && !parentNode) {
       newNode = { id: newNodeId, type: 'period', position: { x: 100, y: 100 }, data: { name, description } };
-    } else if (parentNode) {
-      const { type, parentId } = move;
+    } else if (parentNode && move.parentId) {
+      const { type } = move;
       if (type === 'event' && parentNode.type === 'period') {
         newNode = { id: newNodeId, type, position: { x: parentNode.position.x, y: parentNode.position.y + 350 }, data: { name, description } };
-        newEdge = { id: `edge-${parentId}-${newNodeId}`, source: parentId, target: newNodeId, sourceHandle: 'child-source', targetHandle: 'period-target', style: { stroke: 'hsl(var(--primary))' } };
+        newEdge = { id: `edge-${move.parentId}-${newNodeId}`, source: move.parentId, target: newNodeId, sourceHandle: 'child-source', targetHandle: 'period-target', style: { stroke: 'hsl(var(--primary))' } };
       } else if (type === 'scene' && parentNode.type === 'event') {
         newNode = { id: newNodeId, type, position: { x: parentNode.position.x, y: parentNode.position.y + 350 }, data: { name, description } };
-        newEdge = { id: `edge-${parentId}-${newNodeId}`, source: parentId, target: newNodeId, sourceHandle: 'scene-source', targetHandle: 'event-target', style: { stroke: 'hsl(var(--accent))' } };
+        newEdge = { id: `edge-${move.parentId}-${newNodeId}`, source: move.parentId, target: newNodeId, sourceHandle: 'scene-source', targetHandle: 'event-target', style: { stroke: 'hsl(var(--accent))' } };
       } else if (type === 'period' && parentNode.type === 'period') {
         const direction = Math.random() > 0.5 ? 'right' : 'left';
         const xOffset = direction === 'right' ? 300 : -300;
         newNode = { id: newNodeId, type, position: { x: parentNode.position.x + xOffset, y: parentNode.position.y }, data: { name, description } };
-        newEdge = { id: `edge-${direction === 'left' ? newNodeId : parentId}-${direction === 'left' ? parentId : newNodeId}`, source: direction === 'left' ? newNodeId : parentId, target: direction === 'left' ? parentId : newNodeId, sourceHandle: 'peer-source', targetHandle: 'peer-target', style: { stroke: 'hsl(var(--accent))' } };
+        newEdge = { id: `edge-${direction === 'left' ? newNodeId : move.parentId}-${direction === 'left' ? move.parentId : newNodeId}`, source: direction === 'left' ? newNodeId : move.parentId, target: direction === 'left' ? move.parentId : newNodeId, sourceHandle: 'peer-source', targetHandle: 'peer-target', style: { stroke: 'hsl(var(--accent))' } };
       }
     }
 

@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Handle, Position, NodeProps, Node } from '@xyflow/react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Sparkles } from 'lucide-react';
@@ -13,20 +13,22 @@ import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
 import { useTranslations } from 'next-intl';
 
-type EventNodeData = {
+export type EventNodeData = {
   name: string;
   description: string;
   imageUrl?: string;
-  updateNodeData: (id: string, data: any) => void;
-  deleteNode: (nodeId: string) => void;
-  addScene: (sourceNodeId: string) => void;
-  canAddChild: boolean;
+  updateNodeData?: (id: string, data: any) => void;
+  deleteNode?: (nodeId: string) => void;
+  addScene?: (sourceNodeId: string) => void;
+  canAddChild?: boolean;
 };
 
-function EventNode({ id, data }: NodeProps<EventNodeData>) {
+type EventNode = Node<EventNodeData, 'event'>;
+
+function EventNode({ id, data }: NodeProps<EventNode>) {
   const t = useTranslations('Nodes');
   const t_general = useTranslations('General');
-  const { name, description, imageUrl, updateNodeData, deleteNode, addScene, canAddChild } = data;
+  const { name, description, imageUrl, updateNodeData, deleteNode, addScene, canAddChild = false } = data;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,8 +49,8 @@ function EventNode({ id, data }: NodeProps<EventNodeData>) {
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <Card className="w-64 shadow-lg border-2 border-accent/50 group relative">
         <NodeToolbar
-          onDelete={() => deleteNode(id)}
-          onAddChild={canAddChild ? () => addScene(id) : undefined}
+          onDelete={deleteNode ? () => deleteNode(id) : undefined}
+          onAddChild={canAddChild && addScene ? () => addScene(id) : undefined}
           addChildTooltip={t('addSceneTooltip')}
         />
         <DialogTrigger asChild disabled={!isEditable}>
