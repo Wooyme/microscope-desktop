@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Handle, Position, NodeProps, Node } from '@xyflow/react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Camera, MessageSquare } from 'lucide-react';
@@ -14,18 +14,21 @@ import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import RoleplayModal from '../roleplay-modal';
 import type { DialogueMessage } from '@/lib/types';
+import { stripHtmlTags } from '@/lib/text-utils';
 
-type SceneNodeData = {
+export type SceneNodeData = {
   name: string;
   description: string;
   imageUrl?: string;
   mode?: 'description' | 'roleplay';
   conversation?: DialogueMessage[];
-  updateNodeData: (id: string, data: any) => void;
-  deleteNode: (nodeId: string) => void;
+  updateNodeData?: (id: string, data: any) => void;
+  deleteNode?: (nodeId: string) => void;
 }
 
-function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
+type SceneNode = Node<SceneNodeData, 'scene'>;
+
+function SceneNode({ id, data }: NodeProps<SceneNode>) {
   const t = useTranslations('Nodes');
   const t_general = useTranslations('General');
   const { name, description, imageUrl, updateNodeData, deleteNode, mode = 'description', conversation = [] } = data;
@@ -60,7 +63,7 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <Card className="w-64 shadow-lg border-2 border-green-500/50 group relative">
           <NodeToolbar
-              onDelete={() => deleteNode(id)}
+              onDelete={deleteNode ? () => deleteNode(id) : undefined}
           />
         <DialogTrigger asChild disabled={!isEditable}>
           <div className={cn(isEditable && "cursor-pointer")}>
@@ -93,7 +96,7 @@ function SceneNode({ id, data }: NodeProps<SceneNodeData>) {
                 disabled={!isEditable}
               />
               <Textarea
-                value={description.replace(/<[^>]+>/g, '')}
+                value={stripHtmlTags(description)}
                 placeholder={t('descriptionPlaceholder')}
                 className="text-sm"
                 readOnly

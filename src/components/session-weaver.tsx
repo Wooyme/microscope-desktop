@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect, createContext, useContext } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -26,7 +26,7 @@ import SceneNode from '@/components/nodes/scene-node';
 import Toolbar from '@/components/toolbar';
 import { generateNodeContent } from '@/ai/flows/suggest-next-move';
 import { useToast } from '@/hooks/use-toast';
-import type { GameSeed, Player, LogEntry, AiStrategy, SaveFile, CritiqueAndRegenerateOutput } from '@/lib/types';
+import type { GameSeed, Player, SaveFile, CritiqueAndRegenerateOutput, LogEntry } from '@/lib/types';
 import SettingsPanel from './settings-panel';
 import GameSeedModal from './game-seed-modal';
 import MultiplayerSettingsModal from './multiplayer-settings-modal';
@@ -35,6 +35,10 @@ import { determineAiMove, AiMove } from '@/lib/ai-strategies';
 import ConfirmationDialog from './confirmation-dialog';
 import AiReviewModal from './ai-review-modal';
 import { useLocale, useTranslations } from 'next-intl';
+import { useGameState } from '@/hooks/useGameState';
+import { saveGameToFile, loadGameFromFile } from '@/lib/save-load-utils';
+import { useAiTurn } from '@/hooks/useAiTurn';
+import { stripHtmlTags } from '@/lib/text-utils';
 
 
 let nodeIdCounter = 3;
@@ -68,33 +72,55 @@ function SessionWeaverFlow() {
     { id: 'player-2', name: t_initial('player2Name'), isAI: true, personality: 'Creative', strategy: 'Detailer' },
   ], [t_initial]);
 
+  // Use the new game state hook
+  const gameState = useGameState(
+    initialNodes,
+    initialGameSeed,
+    initialPlayers,
+    t_initial('initialLegacy')
+  );
 
-  const [nodes, setNodes] = useState<Node<any>[]>(initialNodes);
-  const [edges, setEdges] = useState<Edge[]>([]);
-  const [isGodMode, setGodMode] = useState(false);
-  const [isAiTurn, setIsAiTurn] = useState(false);
-  const [focus, setFocus] = useState('');
-  const [legacies, setLegacies] = useState<string[]>([t_initial('initialLegacy')]);
+  const {
+    nodes,
+    edges,
+    gameSeed,
+    players,
+    activePlayerIndex,
+    nodesCreatedThisTurn,
+    firstNodeThisTurnId,
+    nodesAtTurnStart,
+    historyLog,
+    focus,
+    legacies,
+    isGodMode,
+    activePlayer,
+    isHost,
+    inGodMode,
+    setNodes,
+    setEdges,
+    setGameSeed,
+    setPlayers,
+    setActivePlayerIndex,
+    setNodesCreatedThisTurn,
+    setFirstNodeThisTurnId,
+    setNodesAtTurnStart,
+    setHistoryLog,
+    setFocus,
+    setLegacies,
+    setIsGodMode,
+    resetGame,
+    loadGameState,
+    getSaveFile,
+  } = gameState;
+
+  // Use the AI turn hook
+  const { isAiTurn, aiMoveProposal, executeAiTurn, resetAiTurn, setIsAiTurn } = useAiTurn();
+
   const [isGameSeedModalOpen, setGameSeedModalOpen] = useState(false);
-  const [gameSeed, setGameSeed] = useState<GameSeed>(initialGameSeed);
-  const [players, setPlayers] = useState<Player[]>(initialPlayers);
   const [isMultiplayerModalOpen, setMultiplayerModalOpen] = useState(false);
-  const [activePlayerIndex, setActivePlayerIndex] = useState(0);
-  const [nodesCreatedThisTurn, setNodesCreatedThisTurn] = useState(0);
-  const [firstNodeThisTurnId, setFirstNodeThisTurnId] = useState<string | null>(null);
-  const [nodesAtTurnStart, setNodesAtTurnStart] = useState<Node[]>(initialNodes);
-  const [historyLog, setHistoryLog] = useState<LogEntry[]>([]);
   const [isNewGameConfirmOpen, setNewGameConfirmOpen] = useState(false);
-
   const [isAiReviewModalOpen, setAiReviewModalOpen] = useState(false);
-  const [aiMoveProposal, setAiMoveProposal] = useState<{move: AiMove, content: CritiqueAndRegenerateOutput} | null>(null);
 
-
-  const activePlayer = players[activePlayerIndex];
-  const isHost = activePlayerIndex === 0;
-
-  const inGodMode = isHost && isGodMode;
-  
   const maxNodesPerTurn = inGodMode ? Infinity : (isHost ? 2 : 1);
   const canCreateNode = nodesCreatedThisTurn < maxNodesPerTurn;
   
@@ -106,11 +132,12 @@ function SessionWeaverFlow() {
   const handleEndTurn = useCallback(() => {
     // Validation check
     for (const node of nodes) {
-      if (!node.data.name || !node.data.description) {
+      const nodeData = node.data as { name?: string; description?: string };
+      if (!nodeData.name || !nodeData.description) {
         toast({
           variant: 'destructive',
           title: t('incompleteNodesTitle'),
-          description: t('incompleteNodesDescription', { nodeName: node.data.name || node.id }),
+          description: t('incompleteNodesDescription', { nodeName: nodeData.name || node.id }),
         });
         return;
       }
@@ -120,18 +147,19 @@ function SessionWeaverFlow() {
     const newNodes = nodes.filter(n => !nodesAtTurnStart.some(n_start => n_start.id === n.id));
     if (newNodes.length > 0) {
         const summary = newNodes.map(n => {
-            let nodeSummary = t('logSummaryNodeType', { type: n.type, name: n.data.name });
-            if (n.data.description) {
-                nodeSummary += t('logSummaryDescription', { description: n.data.description.replace(/<[^>]+>/g, '') });
+            const nodeData = n.data as { name: string; description: string };
+            let nodeSummary = t('logSummaryNodeType', { type: n.type, name: nodeData.name });
+            if (nodeData.description) {
+                nodeSummary += t('logSummaryDescription', { description: stripHtmlTags(nodeData.description) });
             }
             return nodeSummary;
         }).join(t('logSummaryJoin'));
         
-        const logSummary = t('logSummaryAction', { playerName: activePlayer.name, summary });
+        const logSummary = t('logSummaryAction', { playerName: activePlayer?.name || 'Unknown', summary });
         
         const newLogEntry: LogEntry = {
-            playerId: activePlayer.id,
-            playerName: activePlayer.name,
+            playerId: activePlayer?.id || 'unknown',
+            playerName: activePlayer?.name || 'Unknown',
             summary: logSummary,
             timestamp: new Date().toISOString(),
             addedNodeIds: newNodes.map(n => n.id),
@@ -150,7 +178,7 @@ function SessionWeaverFlow() {
     setNodesCreatedThisTurn(0);
     setFirstNodeThisTurnId(null);
     setNodesAtTurnStart(nodes); // Snapshot nodes for the next turn
-    setAiMoveProposal(null);
+    resetAiTurn();
 
     if (players[nextPlayerIndex]) {
         toast({
@@ -163,50 +191,37 @@ function SessionWeaverFlow() {
             description: t('yourTurnAgain'),
         })
     }
-  }, [activePlayer, nodes, nodesAtTurnStart, players, activePlayerIndex, toast, t]);
+  }, [activePlayer, nodes, nodesAtTurnStart, players, activePlayerIndex, toast, t, resetAiTurn]);
 
   const handleAiTurn = useCallback(async () => {
-    if (!activePlayer?.isAI || isAiTurn) return;
-  
-    setIsAiTurn(true);
-  
-    try {
-      const move = determineAiMove(nodes, edges, historyLog, activePlayer.strategy);
-      if (!move) {
-        throw new Error("AI could not determine a valid move.");
-      }
+    if (!activePlayer?.isAI) return;
 
-      const parentNode = nodes.find(n => n.id === move.parentId);
-  
-      const content = await generateNodeContent({
-        gameSeed: gameSeed,
-        personality: activePlayer.personality || 'Neutral',
-        nodeType: move.type as 'period' | 'event' | 'scene',
-        locale: locale,
-        parentContext: parentNode ? { name: parentNode.data.name, description: parentNode.data.description } : undefined,
-      });
-
-      if (content) {
-        setAiMoveProposal({ move, content });
+    await executeAiTurn(activePlayer, {
+      nodes,
+      edges,
+      historyLog,
+      gameSeed,
+      locale,
+      onSuccess: () => {
         setAiReviewModalOpen(true);
-      } else {
-        throw new Error("AI failed to generate initial content.");
-      }
-  
-    } catch (error) {
-      console.error("AI turn failed:", error);
-      toast({ variant: 'destructive', title: t('aiErrorTitle'), description: t('aiFailedToMove') });
-      handleEndTurn();
-    } finally {
-      // isAiTurn will be set to false when the review modal is closed or actioned.
-    }
-  }, [activePlayer, isAiTurn, nodes, edges, historyLog, gameSeed, handleEndTurn, toast, t, locale]);
+      },
+      onError: (error) => {
+        console.error('AI turn failed:', error);
+        toast({
+          variant: 'destructive',
+          title: t('aiErrorTitle'),
+          description: t('aiFailedToMove'),
+        });
+        handleEndTurn();
+      },
+    });
+  }, [activePlayer, nodes, edges, historyLog, gameSeed, locale, executeAiTurn, handleEndTurn, toast, t]);
 
   const handleAcceptAiMove = (content: CritiqueAndRegenerateOutput) => {
     if (!aiMoveProposal) return;
     const { move } = aiMoveProposal;
     const { name, description } = content;
-    const parentNode = nodes.find(n => n.id === move.parentId);
+    const parentNode = move.parentId ? nodes.find(n => n.id === move.parentId) : undefined;
     
     const newNodeId = getUniqueNodeId(move.type);
     let newNode: Node | null = null;
@@ -214,19 +229,19 @@ function SessionWeaverFlow() {
 
     if (move.type === 'period' && !parentNode) {
       newNode = { id: newNodeId, type: 'period', position: { x: 100, y: 100 }, data: { name, description } };
-    } else if (parentNode) {
-      const { type, parentId } = move;
+    } else if (parentNode && move.parentId) {
+      const { type } = move;
       if (type === 'event' && parentNode.type === 'period') {
         newNode = { id: newNodeId, type, position: { x: parentNode.position.x, y: parentNode.position.y + 350 }, data: { name, description } };
-        newEdge = { id: `edge-${parentId}-${newNodeId}`, source: parentId, target: newNodeId, sourceHandle: 'child-source', targetHandle: 'period-target', style: { stroke: 'hsl(var(--primary))' } };
+        newEdge = { id: `edge-${move.parentId}-${newNodeId}`, source: move.parentId, target: newNodeId, sourceHandle: 'child-source', targetHandle: 'period-target', style: { stroke: 'hsl(var(--primary))' } };
       } else if (type === 'scene' && parentNode.type === 'event') {
         newNode = { id: newNodeId, type, position: { x: parentNode.position.x, y: parentNode.position.y + 350 }, data: { name, description } };
-        newEdge = { id: `edge-${parentId}-${newNodeId}`, source: parentId, target: newNodeId, sourceHandle: 'scene-source', targetHandle: 'event-target', style: { stroke: 'hsl(var(--accent))' } };
+        newEdge = { id: `edge-${move.parentId}-${newNodeId}`, source: move.parentId, target: newNodeId, sourceHandle: 'scene-source', targetHandle: 'event-target', style: { stroke: 'hsl(var(--accent))' } };
       } else if (type === 'period' && parentNode.type === 'period') {
         const direction = Math.random() > 0.5 ? 'right' : 'left';
         const xOffset = direction === 'right' ? 300 : -300;
         newNode = { id: newNodeId, type, position: { x: parentNode.position.x + xOffset, y: parentNode.position.y }, data: { name, description } };
-        newEdge = { id: `edge-${direction === 'left' ? newNodeId : parentId}-${direction === 'left' ? parentId : newNodeId}`, source: direction === 'left' ? newNodeId : parentId, target: direction === 'left' ? parentId : newNodeId, sourceHandle: 'peer-source', targetHandle: 'peer-target', style: { stroke: 'hsl(var(--accent))' } };
+        newEdge = { id: `edge-${direction === 'left' ? newNodeId : move.parentId}-${direction === 'left' ? move.parentId : newNodeId}`, source: direction === 'left' ? newNodeId : move.parentId, target: direction === 'left' ? move.parentId : newNodeId, sourceHandle: 'peer-source', targetHandle: 'peer-target', style: { stroke: 'hsl(var(--accent))' } };
       }
     }
 
@@ -244,7 +259,7 @@ function SessionWeaverFlow() {
 
   const handleCancelAiMove = () => {
     setAiReviewModalOpen(false);
-    setIsAiTurn(false);
+    resetAiTurn();
     handleEndTurn();
   }
 
@@ -443,17 +458,7 @@ function SessionWeaverFlow() {
   );
 
   const handleNewGame = () => {
-    setNodes(initialNodes);
-    setEdges([]);
-    setGameSeed(initialGameSeed);
-    setPlayers(initialPlayers);
-    setActivePlayerIndex(0);
-    setNodesCreatedThisTurn(0);
-    setFirstNodeThisTurnId(null);
-    setNodesAtTurnStart(initialNodes);
-    setHistoryLog([]);
-    setFocus('');
-    setLegacies([t_initial('initialLegacy')]);
+    resetGame();
     nodeIdCounter = 3;
     toast({ title: t('newGameTitle'), description: t('newGameDescription') });
     setNewGameConfirmOpen(false);
@@ -461,30 +466,8 @@ function SessionWeaverFlow() {
   
   const saveGame = () => {
     try {
-      const saveFile: SaveFile = {
-        nodes,
-        edges,
-        gameSeed,
-        players,
-        activePlayerIndex,
-        nodesCreatedThisTurn,
-        firstNodeThisTurnId,
-        nodesAtTurnStart,
-        historyLog,
-        focus,
-        legacies,
-        nodeIdCounter,
-      };
-
-      const dataStr = JSON.stringify(saveFile, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-
-      const exportFileDefaultName = 'session-weaver-save.json';
-
-      const linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileDefaultName);
-      linkElement.click();
+      const saveFile = getSaveFile(nodeIdCounter);
+      saveGameToFile(saveFile);
       toast({ title: t('saveSuccessTitle'), description: t('saveSuccessDescription') });
     } catch (error) {
       console.error('Error saving game:', error);
@@ -496,35 +479,19 @@ function SessionWeaverFlow() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const text = e.target?.result;
-        if (typeof text !== 'string') {
-          throw new Error('File is not a valid text file.');
-        }
-        const saved: SaveFile = JSON.parse(text);
-
-        setNodes(saved.nodes);
-        setEdges(saved.edges);
-        setGameSeed(saved.gameSeed);
-        setPlayers(saved.players);
-        setActivePlayerIndex(saved.activePlayerIndex);
-        setNodesCreatedThisTurn(saved.nodesCreatedThisTurn);
-        setFirstNodeThisTurnId(saved.firstNodeThisTurnId);
-        setNodesAtTurnStart(saved.nodesAtTurnStart);
-        setHistoryLog(saved.historyLog);
-        setFocus(saved.focus);
-        setLegacies(saved.legacies || []);
+    loadGameFromFile(
+      file,
+      (saved: SaveFile) => {
+        loadGameState(saved);
         nodeIdCounter = saved.nodeIdCounter;
-
         toast({ title: t('loadSuccessTitle'), description: t('loadSuccessDescription') });
-      } catch (error) {
+      },
+      (error: Error) => {
         console.error('Error loading game:', error);
         toast({ variant: 'destructive', title: t('loadErrorTitle'), description: t('loadErrorDescription') });
       }
-    };
-    reader.readAsText(file);
+    );
+    
     event.target.value = '';
   };
 
@@ -576,6 +543,8 @@ function SessionWeaverFlow() {
     return nodes.find(n => n.id === aiMoveProposal.move.parentId);
   }, [aiMoveProposal, nodes]);
 
+  const parentNodeData = parentNode?.data as { name?: string } | undefined;
+
   return (
       <div className="w-full h-screen flex flex-col">
           <header className="p-4 border-b bg-card flex justify-between items-center shadow-sm z-10">
@@ -587,7 +556,7 @@ function SessionWeaverFlow() {
                       onSaveClick={saveGame}
                       onLoad={loadGame}
                       isGodMode={inGodMode}
-                      setGodMode={setGodMode}
+                      setGodMode={setIsGodMode}
                       onGameSeedClick={() => setGameSeedModalOpen(true)}
                       onMultiplayerClick={() => setMultiplayerModalOpen(true)}
                       canCreateNode={(inGodMode || canHostCreateGlobalNode) && !activePlayer?.isAI}
@@ -657,7 +626,7 @@ function SessionWeaverFlow() {
                   personality={activePlayer.personality || 'Neutral'}
                   onAccept={handleAcceptAiMove}
                   onCancel={handleCancelAiMove}
-                  parentNodeName={parentNode?.data.name}
+                  parentNodeName={parentNodeData?.name}
                   parentNodeType={parentNode?.type}
                 />
               )}
