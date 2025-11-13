@@ -14,6 +14,7 @@ import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import RoleplayModal from '../roleplay-modal';
 import type { DialogueMessage } from '@/lib/types';
+import { stripHtmlTags } from '@/lib/text-utils';
 
 export type SceneNodeData = {
   name: string;
@@ -95,7 +96,7 @@ function SceneNode({ id, data }: NodeProps<SceneNode>) {
                 disabled={!isEditable}
               />
               <Textarea
-                value={description.replace(/<[^>]+>/g, '')}
+                value={stripHtmlTags(description)}
                 placeholder={t('descriptionPlaceholder')}
                 className="text-sm"
                 readOnly

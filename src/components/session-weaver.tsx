@@ -38,6 +38,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useGameState } from '@/hooks/useGameState';
 import { saveGameToFile, loadGameFromFile } from '@/lib/save-load-utils';
 import { useAiTurn } from '@/hooks/useAiTurn';
+import { stripHtmlTags } from '@/lib/text-utils';
 
 
 let nodeIdCounter = 3;
@@ -149,7 +150,7 @@ function SessionWeaverFlow() {
             const nodeData = n.data as { name: string; description: string };
             let nodeSummary = t('logSummaryNodeType', { type: n.type, name: nodeData.name });
             if (nodeData.description) {
-                nodeSummary += t('logSummaryDescription', { description: String(nodeData.description).replace(/<[^>]+>/g, '') });
+                nodeSummary += t('logSummaryDescription', { description: stripHtmlTags(nodeData.description) });
             }
             return nodeSummary;
         }).join(t('logSummaryJoin'));

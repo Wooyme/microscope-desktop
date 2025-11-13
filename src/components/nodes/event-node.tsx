@@ -12,6 +12,7 @@ import { Textarea } from '../ui/textarea';
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
 import { useTranslations } from 'next-intl';
+import { stripHtmlTags } from '@/lib/text-utils';
 
 export type EventNodeData = {
   name: string;
@@ -84,7 +85,7 @@ function EventNode({ id, data }: NodeProps<EventNode>) {
                 disabled={!isEditable}
               />
                <Textarea
-                value={description.replace(/<[^>]+>/g, '')}
+                value={stripHtmlTags(description)}
                 placeholder={t('descriptionPlaceholder')}
                 className="text-sm"
                 readOnly
